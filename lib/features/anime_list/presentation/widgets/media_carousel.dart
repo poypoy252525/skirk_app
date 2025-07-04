@@ -31,10 +31,7 @@ class MediaCarousel extends StatelessWidget {
         ),
       ),
       error: (error, stackTrace) => Text(error.toString()),
-      loading: () => SizedBox(
-        height: carouselHeight,
-        child: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () => SizedBox(height: carouselHeight),
     );
   }
 }
