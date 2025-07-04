@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       theme: ThemeData.light().copyWith(
         appBarTheme: AppBarTheme(
           backgroundColor: ThemeData.light().scaffoldBackgroundColor,

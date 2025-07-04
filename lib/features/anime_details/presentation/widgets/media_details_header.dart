@@ -24,7 +24,7 @@ class MediaDetailsHeader extends StatelessWidget {
           Positioned.fill(
             child: ClipRRect(
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
                 child: Container(),
               ),
             ),
@@ -35,6 +35,7 @@ class MediaDetailsHeader extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
+                    // Theme.of(context).scaffoldBackgroundColor,
                     Colors.transparent,
                     Theme.of(context).scaffoldBackgroundColor,
                   ],
