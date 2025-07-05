@@ -1,6 +1,8 @@
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skirk_app/features/video_player/presentation/providers/episode_sources_provider.dart';
+import 'package:skirk_app/features/video_player/presentation/widgets/custom_controls.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerWidget extends ConsumerStatefulWidget {
@@ -13,23 +15,42 @@ class VideoPlayerWidget extends ConsumerStatefulWidget {
 }
 
 class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
-  late Future<VideoPlayerController> _controllerFuture;
+  late Future<ChewieController> _controllerFuture;
+  late VideoPlayerController _videoPlayerController;
+  final String _title = 'Episode title here';
 
-  Future<VideoPlayerController> initController() async {
+  Future<ChewieController> initController() async {
     final episodeSources = await ref.read(
       episodeSourcesProvider(
         episodeId: widget.episodeId,
-        category: 'sub',
+        category: 'dub',
         server: 'hd-2',
       ).future,
     );
 
-    final controller = VideoPlayerController.networkUrl(
+    _videoPlayerController = VideoPlayerController.networkUrl(
       Uri.parse(episodeSources.sources[0].url ?? ''),
     );
 
-    await controller.initialize();
-    return controller..play();
+    await _videoPlayerController.initialize();
+
+    return ChewieController(
+      videoPlayerController: _videoPlayerController,
+      autoPlay: true,
+
+      materialProgressColors: ChewieProgressColors(
+        playedColor: Colors.red,
+        bufferedColor: Colors.white.withValues(alpha: 0.5),
+        handleColor: Colors.red,
+      ),
+      // customControls: CupertinoControls(
+      //   backgroundColor: Colors.black54,
+      //   iconColor: Colors.white,
+      //   showPlayButton: false,
+      // ),
+      customControls: CustomMaterialControls(title: _title),
+      showSubtitles: true,
+    );
   }
 
   @override
@@ -40,26 +61,22 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
 
   @override
   void dispose() {
+    _videoPlayerController.dispose();
     _controllerFuture.then((controller) => controller.dispose());
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<VideoPlayerController>(
+    return FutureBuilder<ChewieController>(
       future: _controllerFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done &&
             snapshot.hasData) {
           final controller = snapshot.data!;
           return AspectRatio(
-            aspectRatio: controller.value.aspectRatio,
-            child: GestureDetector(
-              onPanUpdate: (details) {
-                debugPrint(details.delta.dx.toString());
-              },
-              child: VideoPlayer(controller),
-            ),
+            aspectRatio: _videoPlayerController.value.aspectRatio,
+            child: Chewie(controller: controller),
           );
         } else {
           return AspectRatio(

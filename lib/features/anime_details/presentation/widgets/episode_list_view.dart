@@ -49,6 +49,7 @@ Widget _listViewBuilder({required List<Episode> episodes}) {
               context.pushNamed(
                 'watch',
                 pathParameters: {'episodeId': episodes[index].id},
+                extra: episodes[index],
               );
             },
           ),

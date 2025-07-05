@@ -5,6 +5,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'dart:convert';
 import 'package:skirk_app/features/video_player/domain/entities/episode_sources.dart'
+    // ignore: library_prefixes
     as EpisodeSources;
 
 part 'episode_sources_model.freezed.dart';
