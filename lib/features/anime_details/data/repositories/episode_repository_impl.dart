@@ -19,7 +19,6 @@ class EpisodeRepositoryImpl implements EpisodeRepository {
     final episodeModels = await _episodeRemoteDatasource.getEpisodes(mediaId);
 
     final episodes = episodeModels.map((i) => i.toEntity()).toList();
-    print(_episodeCache[mediaId]?.length);
 
     _episodeCache[mediaId] = episodes;
 

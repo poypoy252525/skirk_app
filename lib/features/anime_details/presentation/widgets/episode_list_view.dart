@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:skirk_app/features/anime_details/domain/entities/episode.dart';
 import 'package:skirk_app/features/anime_details/presentation/providers/episode_list_provider.dart';
 import 'package:skirk_app/features/anime_details/presentation/widgets/list_item_card.dart';
@@ -44,7 +45,12 @@ Widget _listViewBuilder({required List<Episode> episodes}) {
             image: episodes[index].image ?? '',
             title: episodes[index].title ?? 'No title',
             index: 'EP ${episodes[index].number}',
-            onTap: (context) {},
+            onTap: (context) {
+              context.pushNamed(
+                'watch',
+                pathParameters: {'episodeId': episodes[index].id},
+              );
+            },
           ),
         )
       : Center(child: Text('No episodes.'));

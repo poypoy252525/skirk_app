@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:skirk_app/core/constants.dart';
 import 'package:skirk_app/features/anime_details/data/models/episode_model/episode_model.dart';
 
 class EpisodeRemoteDatasource {
@@ -10,7 +11,7 @@ class EpisodeRemoteDatasource {
 
   Future<List<EpisodeModel>> getEpisodes(int mediaId) async {
     final response = await _client.get(
-      Uri.parse('https://delflay-server.vercel.app/anime/$mediaId/episodes'),
+      Uri.parse('$skirkAPI/anime/$mediaId/episodes'),
     );
 
     if (response.statusCode == 200) {
