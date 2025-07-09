@@ -96,7 +96,11 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
                     Transform.translate(
                       offset: Offset(
                         0.0,
-                        notifier.hideStuff ? barHeight * 0.8 : 0.0,
+                        chewieController.isFullScreen
+                            ? (notifier.hideStuff ? barHeight * 0.8 : 12)
+                            : (notifier.hideStuff
+                                  ? barHeight * 1
+                                  : barHeight * 0.75),
                       ),
                       child: _buildSubtitles(
                         context,
@@ -289,7 +293,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
         ),
         child: Text(
           currentSubtitle.first!.text.toString(),
-          style: const TextStyle(fontSize: 18),
+          style: TextStyle(fontSize: chewieController.isFullScreen ? 18 : 12),
           textAlign: TextAlign.center,
         ),
       ),

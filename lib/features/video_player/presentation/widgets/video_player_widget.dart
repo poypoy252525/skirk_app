@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skirk_app/features/video_player/presentation/providers/episode_sources_provider.dart';
 import 'package:skirk_app/features/video_player/presentation/widgets/custom_controls.dart';
+import 'package:subtitle/subtitle.dart' as Sub;
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerWidget extends ConsumerStatefulWidget {
@@ -23,13 +24,28 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
     final episodeSources = await ref.read(
       episodeSourcesProvider(
         episodeId: widget.episodeId,
-        category: 'dub',
-        server: 'hd-2',
+        category: 'sub',
+        server: 'hd-1',
       ).future,
     );
 
+    final track = episodeSources.tracks?.firstWhere((i) => i.lang == 'English');
+
+    final subtitleUri = Uri.parse(track!.url!);
+
+    final subtitleController = Sub.SubtitleController(
+      provider: Sub.SubtitleProvider.fromNetwork(subtitleUri),
+    );
+    await subtitleController.initial();
+
     _videoPlayerController = VideoPlayerController.networkUrl(
       Uri.parse(episodeSources.sources[0].url ?? ''),
+      httpHeaders: {'Referer': 'https://megacloud.blog/'},
+      formatHint:
+          episodeSources.sources[0].isM3U8 != null &&
+              episodeSources.sources[0].isM3U8!
+          ? VideoFormat.hls
+          : VideoFormat.other,
     );
 
     await _videoPlayerController.initialize();
@@ -43,13 +59,20 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
         bufferedColor: Colors.white.withValues(alpha: 0.5),
         handleColor: Colors.red,
       ),
-      // customControls: CupertinoControls(
-      //   backgroundColor: Colors.black54,
-      //   iconColor: Colors.white,
-      //   showPlayButton: false,
-      // ),
       customControls: CustomMaterialControls(title: _title),
       showSubtitles: true,
+      subtitle: Subtitles(
+        subtitleController.subtitles
+            .map(
+              (el) => Subtitle(
+                index: el.index,
+                start: el.start,
+                end: el.end,
+                text: el.data,
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 
@@ -76,7 +99,12 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
           final controller = snapshot.data!;
           return AspectRatio(
             aspectRatio: _videoPlayerController.value.aspectRatio,
-            child: Chewie(controller: controller),
+            child: GestureDetector(
+              onPanUpdate: (details) {
+                debugPrint(details.delta.dy.toString());
+              },
+              child: Chewie(controller: controller),
+            ),
           );
         } else {
           return AspectRatio(
@@ -91,3 +119,5 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
     );
   }
 }
+
+// void _parseTrackToSubtitle() {}
