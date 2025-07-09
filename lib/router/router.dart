@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skirk_app/features/anime_details/presentation/pages/media_details_screen.dart';
 import 'package:skirk_app/features/anime_list/presentation/pages/home_screen.dart';
+import 'package:skirk_app/features/experiment/presentation/experiment_screen.dart';
 import 'package:skirk_app/features/video_player/presentation/pages/watch_screen.dart';
 import 'package:skirk_app/layout/layout.dart';
 
@@ -45,6 +46,15 @@ final router = GoRouter(
                 appBar: AppBar(title: Text('Profile')),
                 body: Center(child: Text('Profile screen')),
               ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              name: 'experiment',
+              path: '/experiment',
+              builder: (context, state) => ExperimentScreen(),
             ),
           ],
         ),

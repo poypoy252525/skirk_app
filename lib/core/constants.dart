@@ -6,3 +6,5 @@ final Map<String, String> headers = {
 };
 
 final String skirkAPI = 'https://delflay-server.vercel.app';
+
+final double bottomNavigationBarHeight = 55;

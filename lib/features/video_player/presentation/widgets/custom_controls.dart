@@ -146,7 +146,8 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
 
   Widget _buildActionBar() {
     return Positioned(
-      top: 10,
+      top: 0,
+      height: 55,
       right: 20,
       left: 20,
       child: SafeArea(

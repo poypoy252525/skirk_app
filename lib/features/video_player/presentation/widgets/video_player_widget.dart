@@ -1,9 +1,10 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skirk_app/features/video_player/domain/entities/episode_sources.dart';
 import 'package:skirk_app/features/video_player/presentation/providers/episode_sources_provider.dart';
 import 'package:skirk_app/features/video_player/presentation/widgets/custom_controls.dart';
-import 'package:subtitle/subtitle.dart' as Sub;
+import 'package:subtitle/subtitle.dart' as sub;
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerWidget extends ConsumerStatefulWidget {
@@ -29,15 +30,6 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
       ).future,
     );
 
-    final track = episodeSources.tracks?.firstWhere((i) => i.lang == 'English');
-
-    final subtitleUri = Uri.parse(track!.url!);
-
-    final subtitleController = Sub.SubtitleController(
-      provider: Sub.SubtitleProvider.fromNetwork(subtitleUri),
-    );
-    await subtitleController.initial();
-
     _videoPlayerController = VideoPlayerController.networkUrl(
       Uri.parse(episodeSources.sources[0].url ?? ''),
       httpHeaders: {'Referer': 'https://megacloud.blog/'},
@@ -49,6 +41,20 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
     );
 
     await _videoPlayerController.initialize();
+
+    sub.SubtitleController? subtitleController;
+    final Track? track = episodeSources.tracks?.firstWhere(
+      (i) => i.lang == 'English',
+      orElse: () => Track(),
+    );
+    if (track != null && track.url != null) {
+      final subtitleUri = Uri.parse(track.url!);
+
+      subtitleController = sub.SubtitleController(
+        provider: sub.SubtitleProvider.fromNetwork(subtitleUri),
+      );
+      await subtitleController.initial();
+    }
 
     return ChewieController(
       videoPlayerController: _videoPlayerController,
@@ -62,16 +68,18 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
       customControls: CustomMaterialControls(title: _title),
       showSubtitles: true,
       subtitle: Subtitles(
-        subtitleController.subtitles
-            .map(
-              (el) => Subtitle(
-                index: el.index,
-                start: el.start,
-                end: el.end,
-                text: el.data,
-              ),
-            )
-            .toList(),
+        subtitleController != null
+            ? subtitleController.subtitles
+                  .map(
+                    (el) => Subtitle(
+                      index: el.index,
+                      start: el.start,
+                      end: el.end,
+                      text: el.data,
+                    ),
+                  )
+                  .toList()
+            : [],
       ),
     );
   }
@@ -84,8 +92,10 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
 
   @override
   void dispose() {
-    _videoPlayerController.dispose();
-    _controllerFuture.then((controller) => controller.dispose());
+    _controllerFuture.then((controller) {
+      _videoPlayerController.dispose();
+      controller.dispose();
+    });
     super.dispose();
   }
 

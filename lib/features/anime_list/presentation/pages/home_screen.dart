@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skirk_app/core/constants.dart';
 import 'package:skirk_app/features/anime_list/presentation/providers/latest_media_provider.dart';
 import 'package:skirk_app/features/anime_list/presentation/providers/popular_media_by_season_provider.dart';
 import 'package:skirk_app/features/anime_list/presentation/providers/popular_media_provider.dart';
@@ -38,7 +39,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: 16),
+        padding: EdgeInsets.only(bottom: bottomNavigationBarHeight + 16),
         child: Column(
           spacing: 16,
           children: [
