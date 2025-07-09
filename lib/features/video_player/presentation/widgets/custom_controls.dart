@@ -287,7 +287,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
     return Padding(
       padding: EdgeInsets.all(marginSize),
       child: Container(
-        padding: const EdgeInsets.all(5),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
         decoration: BoxDecoration(
           color: const Color(0x96000000),
           borderRadius: BorderRadius.circular(10.0),
@@ -429,7 +429,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
             }
           }
         } else {
-          _playPause();
+          // _playPause();
 
           setState(() {
             notifier.hideStuff = true;
