@@ -15,6 +15,7 @@ import 'package:chewie/src/models/subtitle_model.dart';
 import 'package:chewie/src/notifiers/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:skirk_app/core/constants.dart';
 import 'package:video_player/video_player.dart';
 
 class CustomMaterialControls extends StatefulWidget {
@@ -22,10 +23,14 @@ class CustomMaterialControls extends StatefulWidget {
     this.showPlayButton = true,
     super.key,
     this.title,
+    this.animationController,
+    required this.fadeController,
   });
 
   final bool showPlayButton;
   final String? title;
+  final AnimationController? animationController;
+  final AnimationController fadeController;
 
   @override
   State<StatefulWidget> createState() {
@@ -61,10 +66,23 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
   void initState() {
     super.initState();
     notifier = Provider.of<PlayerNotifier>(context, listen: false);
+
+    widget.animationController?.addStatusListener((status) {
+      if (chewieController.isFullScreen) return;
+      if (!mounted) return;
+      setState(() {
+        if (status.isCompleted || status.isAnimating) {
+          // _showControls = false;
+          notifier.hideStuff = true;
+        }
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    double maxValue = 1;
+
     if (_latestValue.hasError) {
       return chewieController.errorBuilder?.call(
             context,
@@ -78,40 +96,62 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
         _cancelAndRestartTimer();
       },
       child: GestureDetector(
-        onTap: () => _cancelAndRestartTimer(),
+        onTap: () {
+          _cancelAndRestartTimer();
+          if (widget.animationController == null ||
+              chewieController.isFullScreen) {
+            return;
+          }
+          if (widget.animationController!.status == AnimationStatus.completed) {
+            debugPrint('completed and tapped');
+            widget.animationController!.reverse();
+          }
+        },
+        onPanStart: (details) {
+          if (widget.animationController == null ||
+              chewieController.isFullScreen) {
+            return;
+          }
+          // notifier.hideStuff = true;
+        },
+        onPanUpdate: (details) {
+          if (widget.animationController == null ||
+              chewieController.isFullScreen) {
+            return;
+          }
+          // if (!canPanBack) return;
+          widget.animationController!.value +=
+              (details.delta.dy /
+              (MediaQuery.of(context).size.height -
+                  (bottomNavigationBarHeight +
+                      MediaQuery.of(context).padding.bottom) -
+                  100));
+          widget.animationController!.value = widget.animationController!.value
+              .clamp(0, maxValue);
+          return;
+        },
+        onPanEnd: (details) {
+          if (widget.animationController == null) return;
+
+          // setState(() {
+          //   _subtitleOn = true;
+          // });
+
+          if (details.velocity.pixelsPerSecond.dy > 1000) {
+            widget.animationController!.animateTo(maxValue);
+            return;
+          }
+
+          if (widget.animationController!.value > 0.5) {
+            widget.animationController!.animateTo(maxValue);
+          } else {
+            widget.animationController!.reverse();
+          }
+        },
         child: AbsorbPointer(
-          absorbing: notifier.hideStuff,
-          child: Stack(
-            children: [
-              if (_displayBufferingIndicator)
-                _chewieController?.bufferingBuilder?.call(context) ??
-                    const Center(child: CircularProgressIndicator())
-              else
-                _buildHitArea(),
-              _buildActionBar(),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  if (_subtitleOn)
-                    Transform.translate(
-                      offset: Offset(
-                        0.0,
-                        chewieController.isFullScreen
-                            ? (notifier.hideStuff ? barHeight * 0.8 : 12)
-                            : (notifier.hideStuff
-                                  ? barHeight * 1
-                                  : barHeight * 0.75),
-                      ),
-                      child: _buildSubtitles(
-                        context,
-                        chewieController.subtitle!,
-                      ),
-                    ),
-                  _buildBottomBar(context),
-                ],
-              ),
-            ],
-          ),
+          absorbing:
+              !widget.animationController!.isCompleted && notifier.hideStuff,
+          child: _buildContent(),
         ),
       ),
     );
@@ -142,6 +182,84 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
     }
 
     super.didChangeDependencies();
+  }
+
+  Widget _buildContent() {
+    return Stack(
+      children: [
+        if (_displayBufferingIndicator)
+          _chewieController?.bufferingBuilder?.call(context) ??
+              const Center(child: CircularProgressIndicator())
+        else if (!chewieController.isFullScreen &&
+                widget.animationController!.isDismissed ||
+            chewieController.isFullScreen) ...[
+          _buildHitArea(),
+          _buildActionBar(),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              if (_subtitleOn)
+                Transform.translate(
+                  offset: Offset(
+                    0.0,
+                    chewieController.isFullScreen
+                        ? (notifier.hideStuff ? barHeight * 0.8 : 12)
+                        : (notifier.hideStuff
+                              ? barHeight * 1
+                              : barHeight * 0.75),
+                  ),
+                  child: _buildSubtitles(context, chewieController.subtitle!),
+                ),
+              _buildBottomBar(context),
+            ],
+          ),
+        ] else if (widget.animationController != null &&
+            widget.animationController!.isCompleted)
+          _buildMinimizedControls(),
+      ],
+    );
+  }
+
+  Widget _buildMinimizedControls() {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          Positioned.fill(child: Container(color: Colors.transparent)),
+          Positioned(
+            child: IconButton(
+              onPressed: () {
+                chewieController.isPlaying
+                    ? chewieController.pause()
+                    : chewieController.play();
+              },
+              icon: Icon(
+                chewieController.isPlaying ? Icons.pause : Icons.play_arrow,
+              ),
+              style: ButtonStyle(
+                backgroundColor: WidgetStateColor.resolveWith((states) {
+                  return Colors.black38;
+                }),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              onPressed: () {
+                widget.fadeController.forward();
+              },
+              icon: Icon(Icons.close),
+              style: ButtonStyle(
+                backgroundColor: WidgetStateColor.resolveWith((states) {
+                  return Colors.black38;
+                }),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildActionBar() {
@@ -284,6 +402,8 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
       );
     }
 
+    // bool isMinimized = widget.animationController != null && widget.animationController!.isCompleted;
+
     return Padding(
       padding: EdgeInsets.all(marginSize),
       child: Container(
@@ -294,7 +414,11 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
         ),
         child: Text(
           currentSubtitle.first!.text.toString(),
-          style: TextStyle(fontSize: chewieController.isFullScreen ? 18 : 12),
+          style: TextStyle(
+            fontSize: chewieController.isFullScreen ? 18 : 12,
+            fontWeight: FontWeight.bold,
+            height: 1.2,
+          ),
           textAlign: TextAlign.center,
         ),
       ),

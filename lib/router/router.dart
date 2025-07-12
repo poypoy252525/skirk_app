@@ -40,21 +40,26 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              name: 'profile',
-              path: '/profile',
-              builder: (context, state) => Scaffold(
-                appBar: AppBar(title: Text('Profile')),
-                body: Center(child: Text('Profile screen')),
-              ),
+              name: 'experiment',
+              path: '/experiment',
+              builder: (context, state) => DiscoverScreen(),
             ),
           ],
         ),
         StatefulShellBranch(
           routes: [
             GoRoute(
-              name: 'experiment',
-              path: '/experiment',
-              builder: (context, state) => ExperimentScreen(),
+              name: 'profile',
+              path: '/profile',
+              builder: (context, state) => Scaffold(
+                appBar: AppBar(title: Text('Profile')),
+                body: Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: kBottomNavigationBarHeight,
+                  ),
+                  child: Center(child: Text('Profile screen')),
+                ),
+              ),
             ),
           ],
         ),

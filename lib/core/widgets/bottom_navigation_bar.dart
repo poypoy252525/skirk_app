@@ -2,13 +2,16 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:skirk_app/core/constants.dart';
-import 'package:skirk_app/core/providers/minimizable_animation_controller_provider.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
-  const CustomBottomNavigationBar({super.key, required this.navigationShell});
+  const CustomBottomNavigationBar({
+    super.key,
+    required this.navigationShell,
+    required this.animationController,
+  });
 
+  final AnimationController animationController;
   final StatefulNavigationShell navigationShell;
 
   @override
@@ -19,17 +22,16 @@ class CustomBottomNavigationBar extends StatefulWidget {
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   @override
   Widget build(BuildContext context) {
-    final notifier = Provider.of<MinimizableAnimationControllerProvider>(
-      context,
-    );
-
     final offset = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset(0, bottomNavigationBarHeight),
-    ).animate(notifier.controller);
+      begin: Offset(
+        0,
+        bottomNavigationBarHeight + MediaQuery.of(context).padding.bottom,
+      ),
+      end: Offset.zero,
+    ).animate(widget.animationController);
 
     return AnimatedBuilder(
-      animation: notifier.controller,
+      animation: widget.animationController,
       builder: (context, child) {
         return Transform.translate(
           offset: offset.value,
@@ -44,7 +46,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
             ),
             child: ClipRRect(
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                 child: NavigationBar(
                   backgroundColor: Theme.of(
                     context,
@@ -62,14 +64,14 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                       selectedIcon: Icon(Icons.home),
                     ),
                     NavigationDestination(
+                      icon: Icon(Icons.explore_outlined),
+                      label: 'Discover',
+                      selectedIcon: Icon(Icons.explore),
+                    ),
+                    NavigationDestination(
                       icon: Icon(Icons.person_outlined),
                       label: 'Profile',
                       selectedIcon: Icon(Icons.person),
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.explore_outlined),
-                      label: 'Experiment',
-                      selectedIcon: Icon(Icons.explore),
                     ),
                   ],
                   selectedIndex: widget.navigationShell.currentIndex,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:skirk_app/features/anime_details/domain/entities/episode.dart';
 import 'package:skirk_app/features/anime_details/presentation/providers/episode_list_provider.dart';
 import 'package:skirk_app/features/anime_details/presentation/widgets/list_item_card.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:skirk_app/features/video_player/presentation/providers/playing_data_provider/playing_data_provider.dart';
 
 class Episodelistview extends ConsumerStatefulWidget {
   const Episodelistview({super.key, required this.mediaId});
@@ -26,7 +26,7 @@ class _EpisodelistviewState extends ConsumerState<Episodelistview>
     );
 
     return episodeListAsync.when(
-      data: (episodes) => _listViewBuilder(episodes: episodes),
+      data: (episodes) => _listViewBuilder(episodes: episodes, ref: ref),
       error: (error, stackTrace) => Text('$error'),
       loading: () => _listViewLoading(context: context),
     );
@@ -36,7 +36,10 @@ class _EpisodelistviewState extends ConsumerState<Episodelistview>
   bool get wantKeepAlive => true;
 }
 
-Widget _listViewBuilder({required List<Episode> episodes}) {
+Widget _listViewBuilder({
+  required List<Episode> episodes,
+  required WidgetRef ref,
+}) {
   return episodes.isNotEmpty
       ? ListView.builder(
           itemCount: episodes.length,
@@ -46,11 +49,9 @@ Widget _listViewBuilder({required List<Episode> episodes}) {
             title: episodes[index].title ?? 'No title',
             index: 'EP ${episodes[index].number}',
             onTap: (context) {
-              context.pushNamed(
-                'watch',
-                pathParameters: {'episodeId': episodes[index].id},
-                extra: episodes[index],
-              );
+              ref
+                  .read(playingDataProvider.notifier)
+                  .set(episode: episodes[index]);
             },
           ),
         )

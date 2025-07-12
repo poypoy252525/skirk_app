@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class ExperimentScreen extends StatefulWidget {
-  const ExperimentScreen({super.key});
+class DiscoverScreen extends StatefulWidget {
+  const DiscoverScreen({super.key});
 
   @override
-  State<ExperimentScreen> createState() => _ExperimentScreenState();
+  State<DiscoverScreen> createState() => _DiscoverScreenState();
 }
 
-class _ExperimentScreenState extends State<ExperimentScreen> {
+class _DiscoverScreenState extends State<DiscoverScreen> {
   final draggableController = DraggableScrollableController();
 
   @override
@@ -17,6 +17,12 @@ class _ExperimentScreenState extends State<ExperimentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: Text('Experiment')));
+    return Scaffold(
+      appBar: AppBar(title: Text('Discover')),
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
+        child: Center(child: Text('Coming soon...')),
+      ),
+    );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
+import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_provider.dart';
+import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_animation_controller_provider.dart';
 import 'package:skirk_app/features/video_player/domain/entities/episode_sources.dart';
 import 'package:skirk_app/features/video_player/presentation/providers/episode_sources_provider.dart';
 import 'package:skirk_app/features/video_player/presentation/widgets/custom_controls.dart';
@@ -29,6 +31,9 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
         server: 'hd-1',
       ).future,
     );
+
+    final controller = ref.watch(minimizeAnimationControllerProvider);
+    final fadeController = ref.watch(fadeAnimationProvider);
 
     _videoPlayerController = VideoPlayerController.networkUrl(
       Uri.parse(episodeSources.sources[0].url ?? ''),
@@ -65,8 +70,13 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
         bufferedColor: Colors.white.withValues(alpha: 0.5),
         handleColor: Colors.red,
       ),
-      customControls: CustomMaterialControls(title: _title),
+      customControls: CustomMaterialControls(
+        title: _title,
+        animationController: controller,
+        fadeController: fadeController!,
+      ),
       showSubtitles: true,
+      // showControls: false,
       subtitle: Subtitles(
         subtitleController != null
             ? subtitleController.subtitles
@@ -109,12 +119,7 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
           final controller = snapshot.data!;
           return AspectRatio(
             aspectRatio: _videoPlayerController.value.aspectRatio,
-            child: GestureDetector(
-              onPanUpdate: (details) {
-                debugPrint(details.delta.dy.toString());
-              },
-              child: Chewie(controller: controller),
-            ),
+            child: Chewie(controller: controller),
           );
         } else {
           return AspectRatio(
