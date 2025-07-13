@@ -208,7 +208,11 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
                               ? barHeight * 1
                               : barHeight * 0.75),
                   ),
-                  child: _buildSubtitles(context, chewieController.subtitle!),
+                  child: _buildSubtitles(
+                    context,
+                    chewieController.subtitle!,
+                    false,
+                  ),
                 ),
               _buildBottomBar(context),
             ],
@@ -237,7 +241,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
               ),
               style: ButtonStyle(
                 backgroundColor: WidgetStateColor.resolveWith((states) {
-                  return Colors.black38;
+                  return Colors.black54;
                 }),
               ),
             ),
@@ -252,9 +256,17 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
               icon: Icon(Icons.close),
               style: ButtonStyle(
                 backgroundColor: WidgetStateColor.resolveWith((states) {
-                  return Colors.black38;
+                  return Colors.black54;
                 }),
               ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: _buildSubtitles(context, chewieController.subtitle!, true),
             ),
           ),
         ],
@@ -386,7 +398,11 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
     );
   }
 
-  Widget _buildSubtitles(BuildContext context, Subtitles subtitles) {
+  Widget _buildSubtitles(
+    BuildContext context,
+    Subtitles subtitles,
+    bool isMinimized,
+  ) {
     if (!_subtitleOn) {
       return const SizedBox();
     }
@@ -415,7 +431,11 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
         child: Text(
           currentSubtitle.first!.text.toString(),
           style: TextStyle(
-            fontSize: chewieController.isFullScreen ? 18 : 12,
+            fontSize: chewieController.isFullScreen
+                ? 18
+                : isMinimized
+                ? 8
+                : 12,
             fontWeight: FontWeight.bold,
             height: 1.2,
           ),

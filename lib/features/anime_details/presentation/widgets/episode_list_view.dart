@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:skirk_app/core/constants.dart';
+import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_provider.dart';
+import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_animation_controller_provider.dart';
 import 'package:skirk_app/features/anime_details/domain/entities/episode.dart';
 import 'package:skirk_app/features/anime_details/presentation/providers/episode_list_provider.dart';
 import 'package:skirk_app/features/anime_details/presentation/widgets/list_item_card.dart';
@@ -40,6 +43,8 @@ Widget _listViewBuilder({
   required List<Episode> episodes,
   required WidgetRef ref,
 }) {
+  final controller = ref.watch(minimizeAnimationControllerProvider);
+  final fadeController = ref.watch(fadeAnimationProvider);
   return episodes.isNotEmpty
       ? ListView.builder(
           itemCount: episodes.length,
@@ -52,6 +57,10 @@ Widget _listViewBuilder({
               ref
                   .read(playingDataProvider.notifier)
                   .set(episode: episodes[index]);
+
+              showMinimizableScreen.value = true;
+              controller?.reverse();
+              fadeController?.value = 0;
             },
           ),
         )

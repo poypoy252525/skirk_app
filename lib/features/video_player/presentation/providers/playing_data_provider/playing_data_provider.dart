@@ -6,9 +6,16 @@ part 'playing_data_provider.g.dart';
 @riverpod
 class PlayingData extends _$PlayingData {
   @override
-  Episode? build() => null;
+  Episode? build() {
+    ref.keepAlive();
+    return null;
+  }
 
   void set({required Episode episode}) {
     state = episode;
+  }
+
+  Episode? get() {
+    return state;
   }
 }

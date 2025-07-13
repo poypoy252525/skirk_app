@@ -96,12 +96,14 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
   @override
   void initState() {
     super.initState();
+    debugPrint('initialized video_player_widget');
     _controllerFuture = initController();
   }
 
   @override
   void dispose() {
     _controllerFuture.then((controller) {
+      debugPrint('disposing video player widget');
       _videoPlayerController.dispose();
       controller.dispose();
     });
@@ -133,5 +135,3 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
     );
   }
 }
-
-// void _parseTrackToSubtitle() {}

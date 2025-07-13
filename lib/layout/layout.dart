@@ -30,8 +30,8 @@ class _LayoutState extends ConsumerState<Layout> with TickerProviderStateMixin {
 
       final fadeController = AnimationController(
         vsync: this,
-        duration: Duration(milliseconds: 300),
-        value: 1.0,
+        duration: Duration(milliseconds: 200),
+        // value: 1.0,
       );
 
       fadeController.addStatusListener((status) {
@@ -67,7 +67,12 @@ class _LayoutState extends ConsumerState<Layout> with TickerProviderStateMixin {
       body: Stack(
         children: [
           widget.navigationShell,
-          if (showMinimizableScreen.value) MinimizableScreen(),
+          ValueListenableBuilder(
+            valueListenable: showMinimizableScreen,
+            builder: (context, value, child) {
+              return value ? MinimizableScreen() : Container();
+            },
+          ),
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(

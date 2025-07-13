@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
 import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_provider.dart';
 import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_animation_controller_provider.dart';
+import 'package:skirk_app/features/video_player/presentation/providers/playing_data_provider/playing_data_provider.dart';
 import 'package:skirk_app/features/video_player/presentation/widgets/video_player_widget.dart';
 
 class MinimizableScreen extends ConsumerStatefulWidget {
@@ -13,8 +14,6 @@ class MinimizableScreen extends ConsumerStatefulWidget {
 }
 
 class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
-  final player = VideoPlayerWidget(episodeId: 'attack-on-titan-112?ep=3309');
-
   bool isPanning = false;
   bool shouldIgnore = true;
   bool canPop = false;
@@ -28,6 +27,7 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
     fadeController = ref.read(fadeAnimationProvider.notifier).get();
 
     controller?.addStatusListener((status) {
+      if (!mounted) return;
       setState(() {
         if (status.isCompleted) {
           canPop = true;
@@ -43,6 +43,9 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
   @override
   Widget build(BuildContext context) {
     if (controller == null || fadeController == null) return SizedBox();
+
+    final episode = ref.watch(playingDataProvider);
+
     final bgColor = ColorTween(
       begin: Theme.of(context).scaffoldBackgroundColor,
       end: Colors.transparent,
@@ -110,7 +113,17 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
                             width:
                                 MediaQuery.of(context).size.width * scale.value,
                             height: height,
-                            child: player,
+                            child: episode != null
+                                ? VideoPlayerWidget(
+                                    key: ValueKey(episode.id),
+                                    episodeId: episode.id,
+                                  )
+                                : Container(
+                                    color: Colors.black,
+                                    child: Center(
+                                      child: Text('No episode data.'),
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
