@@ -46,16 +46,22 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
 
     final episode = ref.watch(playingDataProvider);
 
+    final CurvedAnimation curvedAnimation = CurvedAnimation(
+      parent: controller!,
+      curve: Curves.linear,
+      reverseCurve: Curves.easeInCubic,
+    );
+
     final bgColor = ColorTween(
       begin: Theme.of(context).scaffoldBackgroundColor,
       end: Colors.transparent,
     ).animate(CurvedAnimation(parent: controller!, curve: Interval(0.4, 1)));
 
-    final scale = Tween<double>(begin: 1, end: 0.55).animate(controller!);
+    final scale = Tween<double>(begin: 1, end: 0.55).animate(curvedAnimation);
 
     final positionX = Tween<double>(begin: 0, end: 8).animate(controller!);
 
-    final borderRadius = Tween<double>(begin: 0, end: 12).animate(controller!);
+    final borderRadius = Tween<double>(begin: 0, end: 9).animate(controller!);
 
     final opacity = Tween<double>(begin: 1, end: 0).animate(fadeController!);
 
@@ -79,18 +85,15 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
               final height =
                   (9 / 16 * MediaQuery.of(context).size.width) * scale.value;
 
-              final positionY =
-                  Tween<double>(
-                    begin: 0,
-                    end:
-                        containerHeight -
-                        MediaQuery.of(context).padding.top -
-                        MediaQuery.of(context).padding.bottom -
-                        height -
-                        8,
-                  ).animate(
-                    CurvedAnimation(parent: controller!, curve: Curves.easeIn),
-                  );
+              final positionY = Tween<double>(
+                begin: 0,
+                end:
+                    containerHeight -
+                    MediaQuery.of(context).padding.top -
+                    MediaQuery.of(context).padding.bottom -
+                    height -
+                    8,
+              ).animate(curvedAnimation);
               return Stack(
                 children: [
                   Positioned.fill(

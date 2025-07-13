@@ -62,6 +62,8 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
   // We know that _chewieController is set in didChangeDependencies
   ChewieController get chewieController => _chewieController!;
 
+  bool canPan = true;
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +73,9 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
       if (chewieController.isFullScreen) return;
       if (!mounted) return;
       setState(() {
+        if (status.isDismissed) {
+          canPan = true;
+        }
         if (status.isCompleted || status.isAnimating) {
           // _showControls = false;
           notifier.hideStuff = true;
@@ -112,6 +117,12 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
               chewieController.isFullScreen) {
             return;
           }
+
+          if (widget.animationController!.isCompleted) {
+            setState(() {
+              canPan = false;
+            });
+          }
           // notifier.hideStuff = true;
         },
         onPanUpdate: (details) {
@@ -119,13 +130,18 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
               chewieController.isFullScreen) {
             return;
           }
+
+          if (!canPan) return;
+
+          debugPrint('firing pan gesture');
           // if (!canPanBack) return;
           widget.animationController!.value +=
               (details.delta.dy /
-              (MediaQuery.of(context).size.height -
-                  (bottomNavigationBarHeight +
-                      MediaQuery.of(context).padding.bottom) -
-                  100));
+                  (MediaQuery.of(context).size.height -
+                      (bottomNavigationBarHeight +
+                          MediaQuery.of(context).padding.bottom) -
+                      200) -
+              MediaQuery.of(context).padding.top);
           widget.animationController!.value = widget.animationController!.value
               .clamp(0, maxValue);
           return;

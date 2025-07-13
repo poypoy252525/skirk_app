@@ -54,9 +54,11 @@ Widget _listViewBuilder({
             title: episodes[index].title ?? 'No title',
             index: 'EP ${episodes[index].number}',
             onTap: (context) {
-              ref
-                  .read(playingDataProvider.notifier)
-                  .set(episode: episodes[index]);
+              final currentEpisode = ref.read(playingDataProvider.notifier);
+
+              if (currentEpisode.get()?.id != episodes[index].id) {
+                currentEpisode.set(episode: episodes[index]);
+              }
 
               showMinimizableScreen.value = true;
               controller?.reverse();

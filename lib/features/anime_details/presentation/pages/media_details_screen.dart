@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_animation_controller_provider.dart';
+import 'package:skirk_app/core/providers/minimize_player_screen/minimize_player_screen_provider.dart';
 import 'package:skirk_app/features/anime_details/presentation/providers/media_details_provider.dart';
 import 'package:skirk_app/features/anime_details/presentation/widgets/media_details_body.dart';
 
@@ -19,18 +21,37 @@ class _MediaDetailsScreenState extends ConsumerState<MediaDetailsScreen> {
     final mediaDetailsAsync = ref.watch(
       getMediaDetailsProvider(int.parse(widget.mediaId)),
     );
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          mediaDetailsAsync.hasValue ? mediaDetailsAsync.value!.title : '',
-          style: TextStyle(fontSize: 18),
+
+    bool? canPop = ref.watch(minimizeAnimationControllerProvider)?.isCompleted;
+
+    debugPrint('$canPop');
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+
+        if (ref.read(minimizeAnimationControllerProvider)?.isCompleted ??
+            true) {
+          Navigator.pop(context);
+          return;
+        }
+
+        ref.read(minimizePlayerScreenProvider);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            mediaDetailsAsync.hasValue ? mediaDetailsAsync.value!.title : '',
+            style: TextStyle(fontSize: 18),
+          ),
         ),
-      ),
-      body: Center(
-        child: mediaDetailsAsync.when(
-          data: (media) => MediaDetailsBody(mediaDetails: media),
-          error: (error, stackTrace) => Text(error.toString()),
-          loading: () => CircularProgressIndicator(),
+        body: Center(
+          child: mediaDetailsAsync.when(
+            data: (media) => MediaDetailsBody(mediaDetails: media),
+            error: (error, stackTrace) => Text(error.toString()),
+            loading: () => CircularProgressIndicator(),
+          ),
         ),
       ),
     );
