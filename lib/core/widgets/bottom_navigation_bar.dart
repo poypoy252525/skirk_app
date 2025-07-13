@@ -50,7 +50,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                 child: NavigationBar(
                   backgroundColor: Theme.of(
                     context,
-                  ).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                  ).scaffoldBackgroundColor.withValues(alpha: 0.85),
                   height: bottomNavigationBarHeight,
                   indicatorColor: Colors.transparent,
                   overlayColor: WidgetStateColor.resolveWith((states) {

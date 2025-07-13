@@ -6,7 +6,7 @@ part of 'fade_animation_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$fadeAnimationHash() => r'682c504bceb7b89c93708b6ea6c08d3e3a7953c4';
+String _$fadeAnimationHash() => r'38dacaa0cb1a4e9c8610889fa0f4ca6243de4199';
 
 /// See also [FadeAnimation].
 @ProviderFor(FadeAnimation)

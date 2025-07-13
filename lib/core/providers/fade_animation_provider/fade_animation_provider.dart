@@ -15,4 +15,8 @@ class FadeAnimation extends _$FadeAnimation {
   }
 
   AnimationController? get() => state;
+
+  void dispose() {
+    state?.dispose();
+  }
 }

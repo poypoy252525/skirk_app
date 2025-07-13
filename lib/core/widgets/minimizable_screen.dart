@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
 import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_provider.dart';
 import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_animation_controller_provider.dart';
 import 'package:skirk_app/features/video_player/presentation/widgets/video_player_widget.dart';
-import 'package:video_player/video_player.dart';
 
 class MinimizableScreen extends ConsumerStatefulWidget {
   const MinimizableScreen({super.key});
@@ -20,13 +19,13 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
   bool shouldIgnore = true;
   bool canPop = false;
   late AnimationController? controller;
-  late AnimationController fadeController;
+  late AnimationController? fadeController;
 
   @override
   void initState() {
     super.initState();
     controller = ref.read(minimizeAnimationControllerProvider.notifier).get();
-    fadeController = ref.read(fadeAnimationProvider.notifier).get()!;
+    fadeController = ref.read(fadeAnimationProvider.notifier).get();
 
     controller?.addStatusListener((status) {
       setState(() {
@@ -43,7 +42,7 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (controller == null) return SizedBox();
+    if (controller == null || fadeController == null) return SizedBox();
     final bgColor = ColorTween(
       begin: Theme.of(context).scaffoldBackgroundColor,
       end: Colors.transparent,
@@ -55,7 +54,7 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
 
     final borderRadius = Tween<double>(begin: 0, end: 12).animate(controller!);
 
-    final opacity = Tween<double>(begin: 1, end: 0).animate(fadeController);
+    final opacity = Tween<double>(begin: 1, end: 0).animate(fadeController!);
 
     return PopScope(
       canPop: canPop,
@@ -69,7 +68,7 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
         }
       },
       child: AnimatedBuilder(
-        animation: controller!,
+        animation: Listenable.merge([controller, fadeController]),
         builder: (context, child) {
           return LayoutBuilder(
             builder: (context, constraints) {
@@ -124,44 +123,5 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
         },
       ),
     );
-  }
-}
-
-class Player extends StatefulWidget {
-  const Player({super.key});
-
-  @override
-  State<Player> createState() => _PlayerState();
-}
-
-class _PlayerState extends State<Player> {
-  late VideoPlayerController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    debugPrint('player init');
-    _controller = VideoPlayerController.networkUrl(
-      Uri.parse(
-        'https://cloudburst82.xyz/_v7/28791b4450a4bd999da7a5a983de49930c0494486687bf9b7fa71011892d90287d6375c44fc09cb56dac65c11f2ab3c8f248d7b09b8f4fcbb60b78b72c725d172a3d71bc3ea40523f9c43733ec306f583dac0b19d9727e8250055490546047bf6a6d7e356b06f3033b17b9fd3786f59aa8cb7b492cca324ef0f5734042430874/master.m3u8',
-      ),
-      httpHeaders: {'Referer': 'https://megacloud.blog/'},
-    );
-    _controller.initialize();
-
-    _controller.play();
-  }
-
-  @override
-  void dispose() {
-    debugPrint('player dispose');
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return VideoPlayer(_controller);
   }
 }

@@ -76,7 +76,6 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
         fadeController: fadeController!,
       ),
       showSubtitles: true,
-      // showControls: false,
       subtitle: Subtitles(
         subtitleController != null
             ? subtitleController.subtitles
