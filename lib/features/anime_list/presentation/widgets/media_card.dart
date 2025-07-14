@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skirk_app/features/anime_list/domain/entities/media.dart';
@@ -29,8 +30,11 @@ class MediaCard extends StatelessWidget {
                 child: media.coverImage != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          media.coverImage!,
+                        child: CachedNetworkImage(
+                          imageUrl: media.coverImage!.large!,
+                          placeholder: (context, url) {
+                            return ColoredBox(color: Colors.white24);
+                          },
                           fit: BoxFit.cover,
                         ),
                       )

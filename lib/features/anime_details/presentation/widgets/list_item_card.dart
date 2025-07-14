@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class ListItemCard extends StatelessWidget {
@@ -37,7 +38,13 @@ class ListItemCard extends StatelessWidget {
                     Positioned.fill(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(image, fit: BoxFit.cover),
+                        child: CachedNetworkImage(
+                          imageUrl: image,
+                          placeholder: (context, url) {
+                            return ColoredBox(color: Colors.white24);
+                          },
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     if (index != null)

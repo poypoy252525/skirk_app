@@ -5,7 +5,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'dart:convert';
 
-import 'package:skirk_app/features/anime_list/domain/entities/media.dart';
+import 'package:skirk_app/features/anime_list/domain/entities/media.dart'
+    as MediaEntity;
 
 part 'media_model.freezed.dart';
 part 'media_model.g.dart';
@@ -57,11 +58,16 @@ sealed class Title with _$Title {
 }
 
 extension MediaMapper on MediaModel {
-  Media toEntity() {
-    return Media(
+  MediaEntity.Media toEntity() {
+    return MediaEntity.Media(
       id: id,
       title: title?.english ?? title?.romaji ?? title?.native,
-      coverImage: coverImage?.extraLarge,
+      coverImage: MediaEntity.CoverImage(
+        color: coverImage?.color,
+        extraLarge: coverImage?.extraLarge,
+        large: coverImage?.large,
+        medium: coverImage?.medium,
+      ),
       format: format,
       year: seasonYear,
       genres: genres,

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -49,7 +50,13 @@ class CarouselItem extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: Image.network(media.coverImage ?? '', fit: BoxFit.cover),
+            child: CachedNetworkImage(
+              imageUrl: media.coverImage!.extraLarge!,
+              placeholder: (context, url) {
+                return ColoredBox(color: Colors.white24);
+              },
+              fit: BoxFit.cover,
+            ),
           ),
           Positioned.fill(
             child: Container(
