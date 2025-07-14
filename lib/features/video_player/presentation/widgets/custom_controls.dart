@@ -15,7 +15,7 @@ import 'package:chewie/src/models/subtitle_model.dart';
 import 'package:chewie/src/notifiers/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:skirk_app/core/constants.dart';
+import 'package:skirk_app/core/functions.dart';
 import 'package:video_player/video_player.dart';
 
 class CustomMaterialControls extends StatefulWidget {
@@ -86,8 +86,6 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
 
   @override
   Widget build(BuildContext context) {
-    double maxValue = 1;
-
     if (_latestValue.hasError) {
       return chewieController.errorBuilder?.call(
             context,
@@ -107,10 +105,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
               chewieController.isFullScreen) {
             return;
           }
-          if (widget.animationController!.status == AnimationStatus.completed) {
-            debugPrint('completed and tapped');
-            widget.animationController!.reverse();
-          }
+          maximizeVideoPlayer(animationController: widget.animationController!);
         },
         onPanStart: (details) {
           if (widget.animationController == null ||
@@ -133,36 +128,18 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
 
           if (!canPan) return;
 
-          debugPrint('firing pan gesture');
-          // if (!canPanBack) return;
-          widget.animationController!.value +=
-              (details.delta.dy /
-                  (MediaQuery.of(context).size.height -
-                      (bottomNavigationBarHeight +
-                          MediaQuery.of(context).padding.bottom) -
-                      200) -
-              MediaQuery.of(context).padding.top);
-          widget.animationController!.value = widget.animationController!.value
-              .clamp(0, maxValue);
-          return;
+          panUpdateVideoPlayer(
+            context: context,
+            animationController: widget.animationController!,
+            details: details,
+          );
         },
         onPanEnd: (details) {
           if (widget.animationController == null) return;
-
-          // setState(() {
-          //   _subtitleOn = true;
-          // });
-
-          if (details.velocity.pixelsPerSecond.dy > 1000) {
-            widget.animationController!.animateTo(maxValue);
-            return;
-          }
-
-          if (widget.animationController!.value > 0.5) {
-            widget.animationController!.animateTo(maxValue);
-          } else {
-            widget.animationController!.reverse();
-          }
+          panEndVideoPlayer(
+            animationController: widget.animationController!,
+            details: details,
+          );
         },
         child: AbsorbPointer(
           absorbing:
@@ -244,7 +221,14 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
     return Positioned.fill(
       child: Stack(
         children: [
-          Positioned.fill(child: Container(color: Colors.transparent)),
+          Positioned.fill(
+            child: GestureDetector(
+              onPanUpdate: (details) {
+                debugPrint('panning');
+              },
+              child: Container(color: Colors.transparent),
+            ),
+          ),
           Positioned(
             child: IconButton(
               onPressed: () {
@@ -439,10 +423,10 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
     return Padding(
       padding: EdgeInsets.all(marginSize),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
           color: const Color(0x96000000),
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(isMinimized ? 5 : 8.0),
         ),
         child: Text(
           currentSubtitle.first!.text.toString(),

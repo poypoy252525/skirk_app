@@ -17,16 +17,18 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
   bool isPanning = false;
   bool shouldIgnore = true;
   bool canPop = false;
-  late AnimationController? controller;
+  late AnimationController? minimizeController;
   late AnimationController? fadeController;
 
   @override
   void initState() {
     super.initState();
-    controller = ref.read(minimizeAnimationControllerProvider.notifier).get();
+    minimizeController = ref
+        .read(minimizeAnimationControllerProvider.notifier)
+        .get();
     fadeController = ref.read(fadeAnimationProvider.notifier).get();
 
-    controller?.addStatusListener((status) {
+    minimizeController?.addStatusListener((status) {
       if (!mounted) return;
       setState(() {
         if (status.isCompleted) {
@@ -42,58 +44,67 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (controller == null || fadeController == null) return SizedBox();
+    if (minimizeController == null || fadeController == null) return SizedBox();
 
     final episode = ref.watch(playingDataProvider);
 
     final CurvedAnimation curvedAnimation = CurvedAnimation(
-      parent: controller!,
+      parent: minimizeController!,
       curve: Curves.linear,
       reverseCurve: Curves.easeInCubic,
     );
 
-    final bgColor = ColorTween(
-      begin: Theme.of(context).scaffoldBackgroundColor,
-      end: Colors.transparent,
-    ).animate(CurvedAnimation(parent: controller!, curve: Interval(0.4, 1)));
+    final bgColor =
+        ColorTween(
+          begin: Theme.of(context).scaffoldBackgroundColor,
+          end: Colors.transparent,
+        ).animate(
+          CurvedAnimation(
+            parent: minimizeController!,
+            curve: Interval(0.5, 0.85, curve: Curves.easeInCubic),
+          ),
+        );
 
     final scale = Tween<double>(begin: 1, end: 0.55).animate(curvedAnimation);
-
-    final positionX = Tween<double>(begin: 0, end: 8).animate(controller!);
-
-    final borderRadius = Tween<double>(begin: 0, end: 9).animate(controller!);
-
+    final positionX = Tween<double>(
+      begin: 0,
+      end: 8,
+    ).animate(minimizeController!);
+    final positionY = Tween<double>(
+      begin: 0,
+      end:
+          MediaQuery.of(context).size.height -
+          MediaQuery.of(context).padding.top -
+          MediaQuery.of(context).padding.bottom -
+          (9 / 16 * MediaQuery.of(context).size.width) * 0.55 -
+          8,
+    ).animate(curvedAnimation);
+    final borderRadius = Tween<double>(
+      begin: 0,
+      end: 9,
+    ).animate(minimizeController!);
     final opacity = Tween<double>(begin: 1, end: 0).animate(fadeController!);
 
     return PopScope(
       canPop: canPop,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        if (controller!.isDismissed) {
-          controller!.forward();
+        if (minimizeController!.isDismissed) {
+          minimizeController!.forward();
           setState(() {
             canPop = true;
           });
         }
       },
       child: AnimatedBuilder(
-        animation: Listenable.merge([controller, fadeController]),
+        animation: Listenable.merge([minimizeController, fadeController]),
         builder: (context, child) {
           return LayoutBuilder(
             builder: (context, constraints) {
-              final containerHeight = constraints.maxHeight;
+              // final containerHeight = constraints.maxHeight;
               final height =
                   (9 / 16 * MediaQuery.of(context).size.width) * scale.value;
 
-              final positionY = Tween<double>(
-                begin: 0,
-                end:
-                    containerHeight -
-                    MediaQuery.of(context).padding.top -
-                    MediaQuery.of(context).padding.bottom -
-                    height -
-                    8,
-              ).animate(curvedAnimation);
               return Stack(
                 children: [
                   Positioned.fill(
@@ -112,7 +123,16 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
                           borderRadius: BorderRadius.circular(
                             borderRadius.value,
                           ),
-                          child: SizedBox(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              boxShadow: [
+                                BoxShadow(
+                                  offset: Offset(-12, 12),
+                                  color: Colors.black,
+                                ),
+                              ],
+                            ),
                             width:
                                 MediaQuery.of(context).size.width * scale.value,
                             height: height,

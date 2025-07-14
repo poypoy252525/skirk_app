@@ -1,6 +1,7 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
+import 'package:skirk_app/core/functions.dart';
 import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_provider.dart';
 import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_animation_controller_provider.dart';
 import 'package:skirk_app/features/video_player/domain/entities/episode_sources.dart';
@@ -110,28 +111,67 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
     super.dispose();
   }
 
+  bool canPan = true;
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<ChewieController>(
-      future: _controllerFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
-          final controller = snapshot.data!;
-          return AspectRatio(
-            aspectRatio: _videoPlayerController.value.aspectRatio,
-            child: Chewie(controller: controller),
-          );
-        } else {
-          return AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Container(
-              color: Colors.black,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          );
+    final animationController = ref.read(minimizeAnimationControllerProvider);
+    return GestureDetector(
+      onTap: () {
+        debugPrint('hello');
+        if (animationController == null) return;
+        maximizeVideoPlayer(animationController: animationController);
+      },
+
+      onPanStart: (details) {
+        if (animationController == null) return;
+        if (animationController.isCompleted) {
+          setState(() {
+            canPan = false;
+          });
         }
       },
+
+      onPanUpdate: (details) {
+        if (animationController == null) return;
+
+        if (!canPan) return;
+        panUpdateVideoPlayer(
+          context: context,
+          animationController: animationController,
+          details: details,
+        );
+      },
+
+      onPanEnd: (details) {
+        if (animationController == null) return;
+        panEndVideoPlayer(
+          animationController: animationController,
+          details: details,
+        );
+      },
+
+      child: FutureBuilder<ChewieController>(
+        future: _controllerFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData) {
+            final controller = snapshot.data!;
+            return AspectRatio(
+              aspectRatio: _videoPlayerController.value.aspectRatio,
+              child: Chewie(controller: controller),
+            );
+          } else {
+            return AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Container(
+                color: Colors.transparent,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 }

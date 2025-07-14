@@ -12,3 +12,5 @@ final String skirkAPI = 'https://delflay-server.vercel.app';
 final double bottomNavigationBarHeight = 55;
 
 final ValueNotifier<bool> showMinimizableScreen = ValueNotifier<bool>(false);
+
+final ValueNotifier<Offset> videoPlayerPosition = ValueNotifier(Offset.zero);
