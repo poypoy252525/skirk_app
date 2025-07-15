@@ -6,7 +6,7 @@ part of 'media_details_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getMediaDetailsHash() => r'166103bbf1e454035f7773a5af47b55d373d01a3';
+String _$getMediaDetailsHash() => r'a4fc5358a3d8d452613ace4bcd28c9dd03b2c622';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -39,15 +39,15 @@ class GetMediaDetailsFamily extends Family<AsyncValue<MediaDetails>> {
   const GetMediaDetailsFamily();
 
   /// See also [getMediaDetails].
-  GetMediaDetailsProvider call(int mediaId) {
-    return GetMediaDetailsProvider(mediaId);
+  GetMediaDetailsProvider call({required int mediaId}) {
+    return GetMediaDetailsProvider(mediaId: mediaId);
   }
 
   @override
   GetMediaDetailsProvider getProviderOverride(
     covariant GetMediaDetailsProvider provider,
   ) {
-    return call(provider.mediaId);
+    return call(mediaId: provider.mediaId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -68,9 +68,9 @@ class GetMediaDetailsFamily extends Family<AsyncValue<MediaDetails>> {
 /// See also [getMediaDetails].
 class GetMediaDetailsProvider extends AutoDisposeFutureProvider<MediaDetails> {
   /// See also [getMediaDetails].
-  GetMediaDetailsProvider(int mediaId)
+  GetMediaDetailsProvider({required int mediaId})
     : this._internal(
-        (ref) => getMediaDetails(ref as GetMediaDetailsRef, mediaId),
+        (ref) => getMediaDetails(ref as GetMediaDetailsRef, mediaId: mediaId),
         from: getMediaDetailsProvider,
         name: r'getMediaDetailsProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')

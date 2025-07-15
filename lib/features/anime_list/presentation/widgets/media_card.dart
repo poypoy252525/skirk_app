@@ -35,6 +35,8 @@ class MediaCard extends StatelessWidget {
                           placeholder: (context, url) {
                             return ColoredBox(color: Colors.white24);
                           },
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
                           fit: BoxFit.cover,
                         ),
                       )

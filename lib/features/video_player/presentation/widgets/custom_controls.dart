@@ -14,8 +14,12 @@ import 'package:chewie/src/models/option_item.dart';
 import 'package:chewie/src/models/subtitle_model.dart';
 import 'package:chewie/src/notifiers/index.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
 import 'package:provider/provider.dart';
 import 'package:skirk_app/core/functions.dart';
+import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_provider.dart';
+import 'package:skirk_app/features/video_player/presentation/providers/playing_data_provider/playing_data_provider.dart';
+import 'package:skirk_app/features/video_player/presentation/widgets/episode_title.dart';
 import 'package:video_player/video_player.dart';
 
 class CustomMaterialControls extends StatefulWidget {
@@ -246,21 +250,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
               ),
             ),
           ),
-          Positioned(
-            top: 0,
-            right: 0,
-            child: IconButton(
-              onPressed: () {
-                widget.fadeController.forward();
-              },
-              icon: Icon(Icons.close),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateColor.resolveWith((states) {
-                  return Colors.black54;
-                }),
-              ),
-            ),
-          ),
+          Positioned(top: 0, right: 0, child: CloseButton()),
           Positioned(
             bottom: 0,
             left: 0,
@@ -278,38 +268,53 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
     return Positioned(
       top: 0,
       height: 55,
-      right: 20,
-      left: 20,
+      right: 0,
+      left: 0,
       child: SafeArea(
+        bottom: false,
+        top: chewieController.isFullScreen,
         child: AnimatedOpacity(
           opacity: notifier.hideStuff ? 0.0 : 1.0,
           duration: const Duration(milliseconds: 250),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (chewieController.isFullScreen)
-                Flexible(
-                  flex: 2,
-                  child: Text(
-                    widget.title ?? '',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                )
-              else
-                const Spacer(),
-              Flexible(
-                flex: 1,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildSubtitleToggle(),
-                    if (chewieController.showOptions) _buildOptionsButton(),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                notifier.hideStuff = true;
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.only(right: 10, left: 20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withValues(alpha: 0.6),
+                    Colors.transparent,
                   ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
-            ],
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (chewieController.isFullScreen)
+                    Flexible(flex: 8, child: EpisodeTitle())
+                  else
+                    Container(),
+                  Flexible(
+                    flex: 4,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildSubtitleToggle(),
+                        if (chewieController.showOptions) _buildOptionsButton(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -364,8 +369,9 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
   //         }
 
   Widget _buildOptionsButton() {
-    return GestureDetector(
-      onTap: () async {
+    return IconButton(
+      padding: EdgeInsets.all(0),
+      onPressed: () async {
         _hideTimer?.cancel();
 
         if (chewieController.optionsBuilder != null) {
@@ -390,11 +396,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
           _startHideTimer();
         }
       },
-      child: AnimatedOpacity(
-        opacity: notifier.hideStuff ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 250),
-        child: const Icon(Icons.settings_outlined, color: Colors.white),
-      ),
+      icon: Icon(Icons.settings_outlined),
     );
   }
 
@@ -460,7 +462,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
         ),
         child: SafeArea(
           top: false,
-          bottom: chewieController.isFullScreen,
+          bottom: false,
           minimum: chewieController.controlsSafeAreaMinimum,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -484,13 +486,13 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
               ),
               // SizedBox(height: chewieController.isFullScreen ? 15.0 : 0),
               if (!chewieController.isLive)
-                // Expanded(
-                //   child: Container(
-                //     padding: const EdgeInsets.symmetric(horizontal: 0),
-                //     child: Row(children: [_buildProgressBar()]),
-                //   ),
-                // ),
-                _buildProgressBar(),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    child: Row(children: [_buildProgressBar()]),
+                  ),
+                ),
+              // _buildProgressBar(),
             ],
           ),
         ),
@@ -876,6 +878,27 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
               ).disabledColor.withValues(alpha: .5),
             ),
         draggableProgressBar: chewieController.draggableProgressBar,
+      ),
+    );
+  }
+}
+
+class CloseButton extends ConsumerWidget {
+  const CloseButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fadeController = ref.watch(fadeAnimationProvider);
+    return IconButton(
+      onPressed: () {
+        ref.read(playingDataProvider.notifier).set(playingData: null);
+        fadeController?.forward();
+      },
+      icon: Icon(Icons.close),
+      style: ButtonStyle(
+        backgroundColor: WidgetStateColor.resolveWith((states) {
+          return Colors.black54;
+        }),
       ),
     );
   }

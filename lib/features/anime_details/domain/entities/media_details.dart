@@ -1,9 +1,11 @@
+import 'package:skirk_app/features/anime_details/data/models/media_details_model/media_details_model.dart';
+
 class MediaDetails {
   final int id;
   final String title;
   final String description;
   final String status;
-  String? coverImage;
+  CoverImage coverImage;
   String? bannerImage;
   int? score;
   String? format;
@@ -13,7 +15,7 @@ class MediaDetails {
     required this.title,
     required this.description,
     required this.status,
-    this.coverImage,
+    required this.coverImage,
     this.bannerImage,
     this.score,
     this.format,

@@ -99,6 +99,14 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
     super.initState();
     debugPrint('initialized video_player_widget');
     _controllerFuture = initController();
+    ref.read(minimizeAnimationControllerProvider)?.addStatusListener((status) {
+      if (!mounted) return;
+      if (status.isDismissed) {
+        setState(() {
+          canPan = true;
+        });
+      }
+    });
   }
 
   @override

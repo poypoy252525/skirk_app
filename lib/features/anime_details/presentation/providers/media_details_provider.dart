@@ -13,7 +13,7 @@ final mediaDetailsRepository = MediaDetailsRepositoryImpl(
 );
 
 @riverpod
-Future<MediaDetails> getMediaDetails(Ref ref, int mediaId) {
+Future<MediaDetails> getMediaDetails(Ref ref, {required int mediaId}) {
   final mediaDetails = GetMediaDetails(mediaDetailsRepository);
 
   return mediaDetails.execute(mediaId);

@@ -227,7 +227,12 @@ extension MediaDetailsMapper on MediaDetailsModel {
       description: description ?? 'No description.',
       status: status ?? '--Not defined--',
       bannerImage: bannerImage,
-      coverImage: coverImage?.extraLarge,
+      coverImage: CoverImage(
+        color: coverImage?.color,
+        extraLarge: coverImage?.extraLarge,
+        large: coverImage?.large,
+        medium: coverImage?.medium,
+      ),
       format: format,
       score: averageScore,
     );

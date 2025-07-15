@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:skirk_app/features/anime_details/domain/entities/media_details.dart';
 
@@ -15,8 +16,8 @@ class MediaDetailsHeader extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: Image.network(
-              mediaDetails.coverImage ?? '',
+            child: CachedNetworkImage(
+              imageUrl: mediaDetails.coverImage.large ?? '',
               fit: BoxFit.cover,
             ),
           ),
@@ -69,8 +70,11 @@ class _Header extends StatelessWidget {
             width: double.infinity,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                mediaDetails.bannerImage ?? mediaDetails.coverImage ?? '',
+              child: CachedNetworkImage(
+                imageUrl:
+                    mediaDetails.bannerImage ??
+                    mediaDetails.coverImage.large ??
+                    '',
                 fit: BoxFit.cover,
               ),
             ),

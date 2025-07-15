@@ -11,7 +11,7 @@ class ListItemCard extends StatelessWidget {
     this.onTap,
   });
 
-  final String? index;
+  final dynamic index;
   final String title;
   final String image;
   final String description;
@@ -43,6 +43,8 @@ class ListItemCard extends StatelessWidget {
                           placeholder: (context, url) {
                             return ColoredBox(color: Colors.white24);
                           },
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -51,24 +53,28 @@ class ListItemCard extends StatelessWidget {
                       Positioned(
                         bottom: 4,
                         right: 4,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          child: Text(
-                            index!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                        child: index is String
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                child: Text(
+                                  index!,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              )
+                            : index is Widget
+                            ? index
+                            : null,
                       ),
                   ],
                 ),

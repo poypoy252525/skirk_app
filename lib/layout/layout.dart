@@ -24,7 +24,7 @@ class _LayoutState extends ConsumerState<Layout> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final minimizeController = AnimationController(
         vsync: this,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 250),
         value: 1.0,
       );
 

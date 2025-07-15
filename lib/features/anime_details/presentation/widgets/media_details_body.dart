@@ -35,7 +35,7 @@ class MediaDetailsBody extends StatelessWidget {
             Expanded(
               child: TabBarView(
                 children: [
-                  Episodelistview(mediaId: mediaDetails.id),
+                  MediaDetailsEpisodeListView(mediaId: mediaDetails.id),
                   ListViewPlaceholder(),
                   ListViewPlaceholder(),
                 ],

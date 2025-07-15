@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
 import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_provider.dart';
 import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_animation_controller_provider.dart';
+import 'package:skirk_app/core/widgets/draggable_video_player.dart';
+import 'package:skirk_app/core/widgets/episode_list_view.dart';
+import 'package:skirk_app/core/widgets/episode_metadata.dart';
 import 'package:skirk_app/features/video_player/presentation/providers/playing_data_provider/playing_data_provider.dart';
-import 'package:skirk_app/features/video_player/presentation/widgets/video_player_widget.dart';
 
 class MinimizableScreen extends ConsumerStatefulWidget {
   const MinimizableScreen({super.key});
@@ -43,33 +45,37 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (minimizeController == null || fadeController == null) return SizedBox();
 
-    final episode = ref.watch(playingDataProvider);
+    final playingData = ref.watch(playingDataProvider);
 
     final CurvedAnimation curvedAnimation = CurvedAnimation(
       parent: minimizeController!,
-      curve: Curves.linear,
-      reverseCurve: Curves.easeInCubic,
+      curve: Curves.easeInQuad,
     );
 
     final bgColor =
         ColorTween(
           begin: Theme.of(context).scaffoldBackgroundColor,
+          // begin: Colors.amber,
           end: Colors.transparent,
         ).animate(
           CurvedAnimation(
             parent: minimizeController!,
-            curve: Interval(0.5, 0.85, curve: Curves.easeInCubic),
+            curve: Interval(0.35, 0.8, curve: curvedAnimation.curve),
           ),
         );
 
     final scale = Tween<double>(begin: 1, end: 0.55).animate(curvedAnimation);
-    final positionX = Tween<double>(
-      begin: 0,
-      end: 8,
-    ).animate(minimizeController!);
+    final positionX = Tween<double>(begin: 0, end: 8).animate(
+      CurvedAnimation(parent: minimizeController!, curve: Interval(0.35, 1)),
+    );
     final positionY = Tween<double>(
       begin: 0,
       end:
@@ -84,6 +90,12 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
       end: 9,
     ).animate(minimizeController!);
     final opacity = Tween<double>(begin: 1, end: 0).animate(fadeController!);
+    final contentOpacity = Tween<double>(begin: 1, end: 0).animate(
+      CurvedAnimation(
+        parent: minimizeController!,
+        curve: Interval(0.0, 0.35, curve: curvedAnimation.curve),
+      ),
+    );
 
     return PopScope(
       canPop: canPop,
@@ -101,7 +113,6 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
         builder: (context, child) {
           return LayoutBuilder(
             builder: (context, constraints) {
-              // final containerHeight = constraints.maxHeight;
               final height =
                   (9 / 16 * MediaQuery.of(context).size.width) * scale.value;
 
@@ -116,39 +127,45 @@ class _MinimizableScreenState extends ConsumerState<MinimizableScreen> {
                   Positioned(
                     top: positionY.value,
                     right: positionX.value,
+                    left: 0,
+                    height: MediaQuery.of(context).size.height,
                     child: SafeArea(
-                      child: Opacity(
-                        opacity: opacity.value,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            borderRadius.value,
-                          ),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              boxShadow: [
-                                BoxShadow(
-                                  offset: Offset(-12, 12),
-                                  color: Colors.black,
-                                ),
-                              ],
-                            ),
-                            width:
-                                MediaQuery.of(context).size.width * scale.value,
+                      bottom: false,
+                      child: Column(
+                        // mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          DraggableVideo(
+                            borderRadius: borderRadius,
                             height: height,
-                            child: episode != null
-                                ? VideoPlayerWidget(
-                                    key: ValueKey(episode.id),
-                                    episodeId: episode.id,
-                                  )
-                                : Container(
-                                    color: Colors.black,
-                                    child: Center(
-                                      child: Text('No episode data.'),
-                                    ),
-                                  ),
+                            opacity: opacity,
+                            playingData: playingData,
+                            scale: scale,
                           ),
-                        ),
+                          Expanded(
+                            child: IgnorePointer(
+                              ignoring: contentOpacity.value == 0,
+                              child: Opacity(
+                                opacity: contentOpacity.value,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    EpisodeMetadata(),
+                                    EpisodeListView(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Expanded(
+                          //   child: Column(
+                          //     children: [
+                          //       Text('hello'),
+                          //       Expanded(child: Container(color: Colors.black)),
+                          //     ],
+                          //   ),
+                          // ),
+                        ],
                       ),
                     ),
                   ),
