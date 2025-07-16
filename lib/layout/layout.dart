@@ -6,6 +6,7 @@ import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_
 import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_animation_controller_provider.dart';
 import 'package:skirk_app/core/widgets/bottom_navigation_bar.dart';
 import 'package:skirk_app/core/widgets/minimizable_screen.dart';
+import 'package:skirk_app/features/video_player/presentation/providers/drag_video_player_provider/drag_video_player_provider.dart';
 
 class Layout extends ConsumerStatefulWidget {
   const Layout({super.key, required this.navigationShell});
@@ -22,6 +23,16 @@ class _LayoutState extends ConsumerState<Layout> with TickerProviderStateMixin {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final dragVideoPlayerYController = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 300),
+      );
+
+      final dragVideoPlayerXController = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: (300 * (9 / 16)).toInt()),
+      );
+
       final minimizeController = AnimationController(
         vsync: this,
         duration: const Duration(milliseconds: 250),
@@ -38,9 +49,18 @@ class _LayoutState extends ConsumerState<Layout> with TickerProviderStateMixin {
         if (status.isCompleted) {
           setState(() {
             showMinimizableScreen.value = false;
+            // minimizeController.value = 0;
           });
         }
       });
+
+      ref
+          .read(dragVideoPlayerXProvider.notifier)
+          .set(dragVideoPlayerXController);
+
+      ref
+          .read(dragVideoPlayerYProvider.notifier)
+          .set(dragVideoPlayerYController);
 
       ref.read(fadeAnimationProvider.notifier).set(fadeController);
 
@@ -54,6 +74,7 @@ class _LayoutState extends ConsumerState<Layout> with TickerProviderStateMixin {
   void dispose() {
     ref.read(minimizeAnimationControllerProvider.notifier).dispose();
     ref.read(fadeAnimationProvider.notifier).dispose();
+    ref.read(dragVideoPlayerYProvider.notifier).dispose();
     super.dispose();
   }
 

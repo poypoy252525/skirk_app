@@ -14,3 +14,9 @@ final double bottomNavigationBarHeight = 55;
 final ValueNotifier<bool> showMinimizableScreen = ValueNotifier<bool>(false);
 
 final ValueNotifier<Offset> videoPlayerPosition = ValueNotifier(Offset.zero);
+
+// final ValueNotifier<Matrix4> translation = ValueNotifier(
+//   Matrix4.identity()..translate(0.0, 100),
+// );
+
+final ValueNotifier<bool> isMinimizeScreenDisposed = ValueNotifier(true);

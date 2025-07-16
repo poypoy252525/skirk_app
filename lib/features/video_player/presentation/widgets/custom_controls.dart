@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:skirk_app/core/functions.dart';
 import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_provider.dart';
 import 'package:skirk_app/features/video_player/presentation/providers/playing_data_provider/playing_data_provider.dart';
+import 'package:skirk_app/features/video_player/presentation/widgets/drag_video_player_gesture.dart';
 import 'package:skirk_app/features/video_player/presentation/widgets/episode_title.dart';
 import 'package:video_player/video_player.dart';
 
@@ -66,7 +67,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
   // We know that _chewieController is set in didChangeDependencies
   ChewieController get chewieController => _chewieController!;
 
-  bool canPan = true;
+  bool canMinimize = true;
 
   @override
   void initState() {
@@ -78,7 +79,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
       if (!mounted) return;
       setState(() {
         if (status.isDismissed) {
-          canPan = true;
+          canMinimize = true;
         }
         if (status.isCompleted || status.isAnimating) {
           // _showControls = false;
@@ -119,7 +120,7 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
 
           if (widget.animationController!.isCompleted) {
             setState(() {
-              canPan = false;
+              canMinimize = false;
             });
           }
           // notifier.hideStuff = true;
@@ -130,13 +131,14 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
             return;
           }
 
-          if (!canPan) return;
-
-          panUpdateVideoPlayer(
-            context: context,
-            animationController: widget.animationController!,
-            details: details,
-          );
+          if (canMinimize) {
+            panUpdateVideoPlayer(
+              context: context,
+              animationController: widget.animationController!,
+              details: details,
+            );
+            return;
+          }
         },
         onPanEnd: (details) {
           if (widget.animationController == null) return;
@@ -226,9 +228,12 @@ class _CustomMaterialControlsState extends State<CustomMaterialControls>
       child: Stack(
         children: [
           Positioned.fill(
-            child: GestureDetector(
-              onPanUpdate: (details) {
-                debugPrint('panning');
+            child: DragVideoPlayerGesture(
+              onTap: () {
+                if (widget.animationController == null) return;
+                maximizeVideoPlayer(
+                  animationController: widget.animationController!,
+                );
               },
               child: Container(color: Colors.transparent),
             ),
@@ -891,7 +896,8 @@ class CloseButton extends ConsumerWidget {
     final fadeController = ref.watch(fadeAnimationProvider);
     return IconButton(
       onPressed: () {
-        ref.read(playingDataProvider.notifier).set(playingData: null);
+        final playingDataNotifier = ref.read(playingDataProvider.notifier);
+        playingDataNotifier.set(playingData: null);
         fadeController?.forward();
       },
       icon: Icon(Icons.close),

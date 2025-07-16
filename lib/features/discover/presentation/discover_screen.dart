@@ -21,7 +21,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       appBar: AppBar(title: Text('Discover')),
       body: Padding(
         padding: const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
-        child: Center(child: Text('Coming soon...')),
+        child: Center(
+          child: ElevatedButton(
+            onPressed: () {},
+            child: Text('Open video player'),
+          ),
+        ),
       ),
     );
   }

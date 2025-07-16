@@ -6,6 +6,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'dart:convert';
 
 import 'package:skirk_app/features/anime_list/domain/entities/media.dart'
+    // ignore: library_prefixes
     as MediaEntity;
 
 part 'media_model.freezed.dart';

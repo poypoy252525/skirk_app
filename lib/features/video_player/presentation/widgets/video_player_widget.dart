@@ -7,6 +7,7 @@ import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_
 import 'package:skirk_app/features/video_player/domain/entities/episode_sources.dart';
 import 'package:skirk_app/features/video_player/presentation/providers/episode_sources_provider.dart';
 import 'package:skirk_app/features/video_player/presentation/widgets/custom_controls.dart';
+import 'package:skirk_app/features/video_player/presentation/widgets/drag_video_player_gesture.dart';
 import 'package:subtitle/subtitle.dart' as sub;
 import 'package:video_player/video_player.dart';
 
@@ -124,62 +125,60 @@ class _VideoPlayerWidgetState extends ConsumerState<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     final animationController = ref.read(minimizeAnimationControllerProvider);
-    return GestureDetector(
-      onTap: () {
-        debugPrint('hello');
-        if (animationController == null) return;
-        maximizeVideoPlayer(animationController: animationController);
-      },
+    return FutureBuilder<ChewieController>(
+      future: _controllerFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.hasData) {
+          final controller = snapshot.data!;
+          return AspectRatio(
+            aspectRatio: _videoPlayerController.value.aspectRatio,
+            child: Chewie(controller: controller),
+          );
+        } else {
+          return DragVideoPlayerGesture(
+            onPanEnd: (details) {
+              if (animationController == null) return;
+              panEndVideoPlayer(
+                animationController: animationController,
+                details: details,
+              );
+            },
+            onPanStart: (details) {
+              if (animationController == null) return;
+              if (animationController.isCompleted) {
+                setState(() {
+                  canPan = false;
+                });
+              }
+            },
+            onPanUpdate: (details) {
+              if (animationController == null) return;
 
-      onPanStart: (details) {
-        if (animationController == null) return;
-        if (animationController.isCompleted) {
-          setState(() {
-            canPan = false;
-          });
-        }
-      },
-
-      onPanUpdate: (details) {
-        if (animationController == null) return;
-
-        if (!canPan) return;
-        panUpdateVideoPlayer(
-          context: context,
-          animationController: animationController,
-          details: details,
-        );
-      },
-
-      onPanEnd: (details) {
-        if (animationController == null) return;
-        panEndVideoPlayer(
-          animationController: animationController,
-          details: details,
-        );
-      },
-
-      child: FutureBuilder<ChewieController>(
-        future: _controllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.hasData) {
-            final controller = snapshot.data!;
-            return AspectRatio(
-              aspectRatio: _videoPlayerController.value.aspectRatio,
-              child: Chewie(controller: controller),
-            );
-          } else {
-            return AspectRatio(
+              if (canPan) {
+                panUpdateVideoPlayer(
+                  context: context,
+                  animationController: animationController,
+                  details: details,
+                );
+                return;
+              }
+            },
+            onTap: () {
+              if (animationController == null) return;
+              maximizeVideoPlayer(animationController: animationController);
+            },
+            canMove: canPan,
+            child: AspectRatio(
               aspectRatio: 16 / 9,
               child: Container(
                 color: Colors.transparent,
                 child: Center(child: CircularProgressIndicator()),
               ),
-            );
-          }
-        },
-      ),
+            ),
+          );
+        }
+      },
     );
   }
 }

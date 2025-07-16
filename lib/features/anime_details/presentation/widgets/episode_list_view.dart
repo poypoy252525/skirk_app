@@ -70,6 +70,13 @@ class _EpisodelistviewState extends ConsumerState<MediaDetailsEpisodeListView>
                   );
                 }
 
+                if (!showMinimizableScreen.value) {
+                  showMinimizableScreen.value = true;
+                  controller?.reverse(from: 0.3);
+                  fadeController?.value = 0;
+                  return;
+                }
+
                 showMinimizableScreen.value = true;
                 controller?.reverse();
                 fadeController?.value = 0;
