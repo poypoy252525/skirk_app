@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:skirk_app/router/router.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  MediaKit.ensureInitialized();
   runApp(ProviderScope(child: MyApp()));
 }
 
@@ -36,6 +40,13 @@ class MyApp extends StatelessWidget {
         ),
         colorScheme: ThemeData.dark().colorScheme.copyWith(
           primary: Colors.white,
+        ),
+        iconButtonTheme: IconButtonThemeData(
+          style: ButtonStyle(
+            iconColor: WidgetStateColor.resolveWith((states) {
+              return Colors.white;
+            }),
+          ),
         ),
       ),
       routerConfig: router,

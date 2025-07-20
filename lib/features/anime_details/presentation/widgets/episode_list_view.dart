@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:skirk_app/core/constants.dart';
-import 'package:skirk_app/core/providers/fade_animation_provider/fade_animation_provider.dart';
-import 'package:skirk_app/core/providers/minimize_animation_controller/minimize_animation_controller_provider.dart';
-import 'package:skirk_app/core/widgets/playing_indicator.dart';
+import 'package:skirk_app/core/presentation/providers/episode_sources_provider/episode_sources_provider.dart';
+import 'package:skirk_app/core/presentation/providers/minimize_video_player_controller/minimize_video_player_controller_provider.dart';
+import 'package:skirk_app/core/presentation/providers/playing_data_provider/playing_data_provider.dart';
 import 'package:skirk_app/features/anime_details/domain/entities/episode.dart';
+import 'package:skirk_app/features/anime_details/domain/entities/media_details.dart';
 import 'package:skirk_app/features/anime_details/presentation/providers/episode_list_provider.dart';
 import 'package:skirk_app/features/anime_details/presentation/widgets/list_item_card.dart';
-import 'package:skirk_app/features/video_player/presentation/providers/playing_data_provider/playing_data_provider.dart';
 
 class MediaDetailsEpisodeListView extends ConsumerStatefulWidget {
-  const MediaDetailsEpisodeListView({super.key, required this.mediaId});
+  const MediaDetailsEpisodeListView({super.key, required this.mediaDetails});
 
-  final int mediaId;
+  final MediaDetails mediaDetails;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -26,14 +26,14 @@ class _EpisodelistviewState extends ConsumerState<MediaDetailsEpisodeListView>
   Widget build(BuildContext context) {
     super.build(context);
     final episodeListAsync = ref.watch(
-      episodeListProvider(mediaId: widget.mediaId),
+      episodeListProvider(mediaId: widget.mediaDetails.malId),
     );
 
     return episodeListAsync.when(
       data: (episodes) => _listViewBuilder(
         episodes: episodes,
         ref: ref,
-        mediaId: widget.mediaId,
+        mediaDetails: widget.mediaDetails,
       ),
       error: (error, stackTrace) => Text('$error'),
       loading: () => _listViewLoading(context: context),
@@ -43,43 +43,41 @@ class _EpisodelistviewState extends ConsumerState<MediaDetailsEpisodeListView>
   Widget _listViewBuilder({
     required List<Episode> episodes,
     required WidgetRef ref,
-    required int mediaId,
+    required MediaDetails mediaDetails,
   }) {
-    final controller = ref.watch(minimizeAnimationControllerProvider);
-    final fadeController = ref.watch(fadeAnimationProvider);
-    final playingData = ref.watch(playingDataProvider);
     return episodes.isNotEmpty
         ? ListView.builder(
             itemCount: episodes.length,
             itemBuilder: (context, index) => ListItemCard(
               description: episodes[index].description ?? 'No description.',
-              image: episodes[index].image ?? '',
+              image:
+                  episodes[index].image ?? mediaDetails.coverImage.large ?? '',
               title: episodes[index].title ?? 'No title',
-              index: episodes[index].id == playingData?.episode.id
-                  ? PlayingIndicator()
-                  : 'EP ${episodes[index].number}',
+              index: 'EP ${episodes[index].number}',
               onTap: (context) {
-                final currentMedia = ref.read(playingDataProvider.notifier);
+                final playingData = ref.read(playingDataProvider);
 
-                if (currentMedia.get()?.episode.id != episodes[index].id) {
-                  currentMedia.set(
-                    playingData: Data(
-                      mediaId: mediaId,
-                      episode: episodes[index],
-                    ),
+                if (playingData?.episode.id != episodes[index].id) {
+                  ref
+                      .read(playingDataProvider.notifier)
+                      .set(
+                        episode: episodes[index],
+                        mediaDetails: widget.mediaDetails,
+                      );
+                  final episodeSourcesNotifier = ref.read(
+                    hianimeEpisodeSourcesProvider.notifier,
                   );
+
+                  episodeSourcesNotifier.remove();
+                  episodeSourcesNotifier.set(episodeId: episodes[index].id);
                 }
 
-                if (!showMinimizableScreen.value) {
-                  showMinimizableScreen.value = true;
-                  controller?.reverse(from: 0.3);
-                  fadeController?.value = 0;
-                  return;
-                }
-
+                final minimizeVideoPlayerController = ref.read(
+                  minimizeVideoPlayerControllerProvider,
+                );
+                minimizeVideoPlayerController?.reverse();
+                debugPrint('my controller: $minimizeVideoPlayerController');
                 showMinimizableScreen.value = true;
-                controller?.reverse();
-                fadeController?.value = 0;
               },
             ),
           )

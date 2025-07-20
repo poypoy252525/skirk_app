@@ -223,6 +223,7 @@ extension MediaDetailsMapper on MediaDetailsModel {
   entity.MediaDetails toEntity() {
     return entity.MediaDetails(
       id: id,
+      malId: idMal ?? -1,
       title: title?.english ?? title?.romaji ?? title?.native ?? '--No title--',
       description: description ?? 'No description.',
       status: status ?? '--Not defined--',

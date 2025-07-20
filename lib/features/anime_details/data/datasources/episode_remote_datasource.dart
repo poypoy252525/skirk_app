@@ -1,8 +1,6 @@
-import 'dart:convert';
-
 import 'package:http/http.dart';
-import 'package:skirk_app/core/constants.dart';
 import 'package:skirk_app/features/anime_details/data/models/episode_model/episode_model.dart';
+import 'package:skirk_app/utils/hianime_scraper.dart';
 
 class EpisodeRemoteDatasource {
   final Client _client;
@@ -10,17 +8,12 @@ class EpisodeRemoteDatasource {
   EpisodeRemoteDatasource(this._client);
 
   Future<List<EpisodeModel>> getEpisodes(int mediaId) async {
-    final response = await _client.get(
-      Uri.parse('$skirkAPI/anime/$mediaId/episodes'),
-    );
+    final HianimeScraper scraper = HianimeScraper(_client);
 
-    if (response.statusCode == 200) {
-      final List decoded = jsonDecode(response.body);
-      return decoded.map((el) => EpisodeModel.fromJson(el)).toList();
-    } else {
-      throw Exception(
-        'Failed to get episode list from $mediaId with status code: ${response.statusCode}',
-      );
+    try {
+      return scraper.getEpisodes(malId: mediaId);
+    } catch (e) {
+      throw Exception('Failed to get episodes from ID: $mediaId');
     }
   }
 }
