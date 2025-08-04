@@ -48,6 +48,7 @@ class _CustomControlsState extends ConsumerState<CustomControls> {
     );
 
     mountedControls = minimizeVideoPlayerController?.isDismissed ?? true;
+    showMinimizeControls = minimizeVideoPlayerController?.isCompleted ?? false;
 
     minimizeVideoPlayerController?.addStatusListener((status) {
       if (!mounted) return;
@@ -602,7 +603,7 @@ class _MinimizedControlsState extends ConsumerState<MinimizedControls>
                       .read(moveVideoPlayerControllerProvider.notifier)
                       .set(null);
                   ref.read(playingDataProvider.notifier).remove();
-                  ref.read(hianimeEpisodeSourcesProvider.notifier).remove();
+                  ref.read(episodeSourcesProvider.notifier).remove();
                   showMinimizableScreen.value = false;
                 },
                 color: Colors.white,

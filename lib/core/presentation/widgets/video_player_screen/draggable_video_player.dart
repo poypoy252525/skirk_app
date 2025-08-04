@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skirk_app/core/presentation/widgets/video_player_screen/custom_video_player.dart';
+import 'package:skirk_app/core/presentation/widgets/video_player_screen/video_player_contents.dart';
 
 class DraggableVideoPlayer extends ConsumerStatefulWidget {
   const DraggableVideoPlayer({
@@ -66,7 +67,7 @@ class _DraggableVideoPlayerState extends ConsumerState<DraggableVideoPlayer> {
     final minimizeVideoPlayerController = widget.minimizeVideoPlayerController;
     final curve = CurvedAnimation(
       parent: minimizeVideoPlayerController,
-      curve: Curves.easeInCubic,
+      curve: Curves.linear,
     );
     final scaleTween = Tween<double>(begin: 1, end: minimizedScale);
     final scale = scaleTween.animate(curve);
@@ -80,91 +81,103 @@ class _DraggableVideoPlayerState extends ConsumerState<DraggableVideoPlayer> {
     return Positioned(
       top: position.dy,
       right: position.dx,
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
       child: SafeArea(
         bottom: false,
-        child: GestureDetector(
-          onTap: () {
-            setState(() {
-              freeDragOffset = Offset.zero;
-              endPosition = position;
-            });
-            minimizeVideoPlayerController.reverse();
-          },
-          onPanStart: (details) {
-            // return;
-            isMinimized = minimizeVideoPlayerController.isCompleted;
-            // widget.moveVideoPlayerController.reset();
-          },
-          onPanUpdate: (details) {
-            // return;
-            if (!isMinimized) {
-              minimizeVideoPlayerController.value +=
-                  details.delta.dy / maxHeight;
-            } else {
-              // do the move thing
-              setState(() {
-                freeDragOffset += Offset(-details.delta.dx, details.delta.dy);
-              });
-            }
-          },
-          onPanEnd: (details) {
-            // return;
-            if (!isMinimized) {
-              if (details.velocity.pixelsPerSecond.dy > 1500) {
-                minimizeVideoPlayerController.forward();
-              } else {
-                if (minimizeVideoPlayerController.value > 0.5) {
-                  minimizeVideoPlayerController.forward();
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  freeDragOffset = Offset.zero;
+                  endPosition = position;
+                });
+                minimizeVideoPlayerController.reverse();
+              },
+              onPanStart: (details) {
+                // return;
+                isMinimized = minimizeVideoPlayerController.isCompleted;
+                // widget.moveVideoPlayerController.reset();
+              },
+              onPanUpdate: (details) {
+                // return;
+                if (!isMinimized) {
+                  minimizeVideoPlayerController.value +=
+                      details.delta.dy / maxHeight;
                 } else {
-                  minimizeVideoPlayerController.reverse();
+                  // do the move thing
+                  setState(() {
+                    freeDragOffset += Offset(
+                      -details.delta.dx,
+                      details.delta.dy,
+                    );
+                  });
                 }
-              }
-            } else {
-              final snap = _getClosestSnapPosition(position);
-              snapPosition = Tween(begin: position, end: snap);
-              snapAnimation = snapPosition!.animate(
-                CurvedAnimation(
-                  parent: widget.moveVideoPlayerController,
-                  curve: Curves.easeOutCubic,
+              },
+              onPanEnd: (details) {
+                // return;
+                if (!isMinimized) {
+                  if (details.velocity.pixelsPerSecond.dy > 1500) {
+                    minimizeVideoPlayerController.forward();
+                  } else {
+                    if (minimizeVideoPlayerController.value > 0.5) {
+                      minimizeVideoPlayerController.forward();
+                    } else {
+                      minimizeVideoPlayerController.reverse();
+                    }
+                  }
+                } else {
+                  final snap = _getClosestSnapPosition(position);
+                  snapPosition = Tween(begin: position, end: snap);
+                  snapAnimation = snapPosition!.animate(
+                    CurvedAnimation(
+                      parent: widget.moveVideoPlayerController,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  );
+
+                  widget.moveVideoPlayerController.removeListener(_updateState);
+
+                  widget.moveVideoPlayerController
+                    ..reset()
+                    ..forward();
+
+                  widget.moveVideoPlayerController.addListener(_updateState);
+                  return;
+                }
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(borderRadius.value),
+                  boxShadow: [
+                    if (minimizeVideoPlayerController.isCompleted)
+                      BoxShadow(
+                        offset: Offset(0, 0),
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 2,
+                        spreadRadius: 1,
+                      ),
+                  ],
                 ),
-              );
-
-              widget.moveVideoPlayerController.removeListener(_updateState);
-
-              widget.moveVideoPlayerController
-                ..reset()
-                ..forward();
-
-              widget.moveVideoPlayerController.addListener(_updateState);
-              return;
-            }
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(borderRadius.value),
-              boxShadow: [
-                if (minimizeVideoPlayerController.isCompleted)
-                  BoxShadow(
-                    offset: Offset(0, 0),
-                    color: Colors.black.withValues(alpha: 0.4),
-                    blurRadius: 2,
-                    spreadRadius: 1,
+                width: width * scale.value,
+                height: height * scale.value,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(borderRadius.value),
+                  clipBehavior: !minimizeVideoPlayerController.isDismissed
+                      ? Clip.hardEdge
+                      : Clip.none,
+                  child: AbsorbPointer(
+                    absorbing: false,
+                    child: const CustomVideoPlayer(),
                   ),
-              ],
-            ),
-            width: width * scale.value,
-            height: height * scale.value,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(borderRadius.value),
-              clipBehavior: !minimizeVideoPlayerController.isDismissed
-                  ? Clip.hardEdge
-                  : Clip.none,
-              child: AbsorbPointer(
-                absorbing: false,
-                child: const CustomVideoPlayer(),
+                ),
               ),
             ),
-          ),
+            Expanded(child: VideoPlayerContents()),
+          ],
         ),
       ),
     );

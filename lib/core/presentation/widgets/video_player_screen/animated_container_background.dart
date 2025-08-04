@@ -20,7 +20,7 @@ class AnimatedContainerBackground extends ConsumerWidget {
     final bgColor = bgColorTween.animate(
       CurvedAnimation(
         parent: minimizeVideoPlayerController,
-        curve: Interval(0.5, 0.8, curve: Curves.easeInCubic),
+        curve: Interval(0.3, 0.8, curve: Curves.linear),
       ),
     );
 

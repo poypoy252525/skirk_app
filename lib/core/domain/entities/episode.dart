@@ -1,33 +1,23 @@
 class Episode {
-  int id;
-  int animeId;
-  int episode;
-  int episode2;
-  String edition;
-  String title;
-  String snapshot;
-  String disc;
-  String audio;
-  String duration;
-  String session;
-  int filler;
-  String description;
-  DateTime createdAt;
+  String id;
+  String? title;
+  String? image;
+  String? imageHash;
+  int number;
+  dynamic createdAt;
+  String? description;
+  String? url;
+  String? duration;
 
   Episode({
     required this.id,
-    required this.animeId,
-    required this.episode,
-    required this.episode2,
-    required this.edition,
-    required this.title,
-    required this.snapshot,
-    required this.disc,
-    required this.audio,
-    required this.duration,
-    required this.session,
-    required this.filler,
-    required this.description,
-    required this.createdAt,
+    this.title,
+    this.image,
+    this.imageHash,
+    required this.number,
+    this.createdAt,
+    this.description,
+    this.url,
+    this.duration,
   });
 }

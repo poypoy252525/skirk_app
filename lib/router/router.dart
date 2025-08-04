@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:skirk_app/features/anime_details/presentation/pages/media_details_screen.dart';
-import 'package:skirk_app/features/anime_list/presentation/pages/home_screen.dart';
-import 'package:skirk_app/features/discover/presentation/discover_screen.dart';
+import 'package:skirk_app/core/presentation/pages/discover_screen.dart';
+import 'package:skirk_app/core/presentation/pages/home_screen.dart';
+import 'package:skirk_app/core/presentation/pages/media_details_screen.dart';
+import 'package:skirk_app/core/presentation/pages/search_screen.dart';
 import 'package:skirk_app/layout/layout.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -27,6 +28,13 @@ final router = GoRouter(
               name: 'media_details',
               builder: (context, state) =>
                   MediaDetailsScreen(mediaId: state.pathParameters['mediaId']!),
+            ),
+            GoRoute(
+              path: '/search',
+              name: 'search',
+              builder: (context, state) {
+                return SearchScreen();
+              },
             ),
           ],
         ),

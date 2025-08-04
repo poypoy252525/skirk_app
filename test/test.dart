@@ -1,13 +1,15 @@
-class Colors {
-  static const header = '\x1B[95m';
-  static const okblue = '\x1B[94m';
-  static const okcyan = '\x1B[96m';
-  static const okgreen = '\x1B[92m';
-  static const warning = '\x1B[93m';
-  static const fail = '\x1B[91m';
-  static const endc = '\x1B[0m';
-  static const bold = '\x1B[1m';
-  static const underline = '\x1B[4m';
-}
+// ignore_for_file: avoid_
 
-void main() async {}
+import 'package:http/http.dart';
+import 'package:skirk_app/extractors/vidwish_extractor.dart';
+
+void main() async {
+  Client client = Client();
+
+  final vidwishExtractor = VidwishExtractor(client);
+  final sources = await vidwishExtractor.extract(episodeId: '3303');
+
+  print('Sources: ${sources.sources?[0].file}');
+
+  client.close();
+}

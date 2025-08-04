@@ -1,12 +1,14 @@
 class EpisodeSources {
-  Sources? sources;
+  List<Source?> sources;
   List<Track>? tracks;
   TimeSkip? intro;
   TimeSkip? outro;
   int? server;
+  String referer;
 
   EpisodeSources({
-    this.sources,
+    required this.sources,
+    required this.referer,
     this.tracks,
     this.intro,
     this.outro,
@@ -21,11 +23,11 @@ class TimeSkip {
   TimeSkip({this.start, this.end});
 }
 
-class Sources {
+class Source {
   String? file;
   bool? isM3U8;
 
-  Sources({this.file, this.isM3U8});
+  Source({this.file, this.isM3U8});
 }
 
 class Track {
@@ -33,6 +35,7 @@ class Track {
   String? label;
   String? kind;
   bool? trackDefault;
+  String? origin;
 
-  Track({this.file, this.label, this.kind, this.trackDefault});
+  Track({this.file, this.label, this.kind, this.trackDefault, this.origin});
 }

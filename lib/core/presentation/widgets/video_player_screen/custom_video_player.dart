@@ -1,9 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:skirk_app/core/domain/entities/episode_sources.dart';
-import 'package:skirk_app/core/presentation/providers/episode_sources_provider/episode_sources_provider.dart';
+import 'package:skirk_app/core/presentation/providers/episode_sources_provider/episode_sources_provider.dart'
+    hide EpisodeSources;
+import 'package:skirk_app/core/presentation/providers/playing_data_provider/playing_data_provider.dart';
 import 'package:skirk_app/core/presentation/widgets/video_player_screen/custom_controls.dart';
 import 'package:skirk_app/core/presentation/widgets/video_player_screen/full_screen_layout.dart';
 import 'package:subtitle/subtitle.dart' hide Subtitle;
@@ -20,18 +23,32 @@ class CustomVideoPlayer extends ConsumerStatefulWidget {
 class _CustomVideoPlayerState extends ConsumerState<CustomVideoPlayer> {
   @override
   Widget build(BuildContext context) {
-    final episodeSources = ref.watch(hianimeEpisodeSourcesProvider);
+    final episodeSources = ref.watch(episodeSourcesProvider);
+    final playingData = ref.watch(playingDataProvider);
     if (episodeSources == null) {
       return AspectRatio(
         aspectRatio: 16 / 9,
-        child: Container(
-          color: Colors.black,
-          child: Center(child: CircularProgressIndicator()),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CachedNetworkImage(
+                imageUrl:
+                    playingData?.episode.image ??
+                    playingData?.mediaDetails.coverImage?.large ??
+                    '',
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned.fill(
+              child: ColoredBox(color: Colors.black.withValues(alpha: 0.5)),
+            ),
+            Center(child: CircularProgressIndicator()),
+          ],
         ),
       );
     }
 
-    debugPrint('${episodeSources.sources?.file}');
+    debugPrint('${episodeSources.sources[0]?.file}');
 
     return ChewieVideoPlayer(episodeSources: episodeSources);
   }
@@ -50,15 +67,18 @@ class _VideoPlayerState extends ConsumerState<ChewieVideoPlayer> {
   late VideoPlayerController _videoPlayerController;
   late ChewieController _chewieController;
   SubtitleController? _subtitleController;
-  final String _referer = 'https://megaplay.buzz/';
 
   Future<void> _initializeSubtitles(List<Track>? tracks) async {
     if (tracks?.isEmpty ?? true) return;
 
+    debugPrint('${tracks?.first}');
+
     final subtitleUri = Uri.parse(
       tracks
               ?.firstWhere(
-                (track) => track.label == 'English',
+                (track) =>
+                    track.label?.trim().toLowerCase().contains('english') ??
+                    false,
                 orElse: () {
                   return Track();
                 },
@@ -67,11 +87,15 @@ class _VideoPlayerState extends ConsumerState<ChewieVideoPlayer> {
           '',
     );
 
+    debugPrint('$subtitleUri');
+
+    if (subtitleUri.host.isEmpty) return;
+
     final client = Client();
 
     final response = await client.get(
       subtitleUri,
-      headers: {'Referer': _referer},
+      headers: {'Referer': widget.episodeSources.referer},
     );
 
     _subtitleController = SubtitleController(
@@ -81,18 +105,18 @@ class _VideoPlayerState extends ConsumerState<ChewieVideoPlayer> {
       ),
     );
 
-    _subtitleController!.initial();
+    await _subtitleController!.initial();
   }
 
   void _initializeControllers() async {
     final data = widget.episodeSources;
 
-    debugPrint(data.sources?.file);
+    debugPrint('source: ${data.sources[0]?.file}');
     debugPrint('${data.tracks}');
 
     _videoPlayerController = VideoPlayerController.networkUrl(
-      Uri.parse(data.sources?.file ?? ''),
-      httpHeaders: {'Referer': _referer},
+      Uri.parse(data.sources[0]?.file ?? ''),
+      httpHeaders: {'Referer': widget.episodeSources.referer},
     );
 
     await Future.wait([
@@ -149,8 +173,8 @@ class _VideoPlayerState extends ConsumerState<ChewieVideoPlayer> {
   void didUpdateWidget(covariant ChewieVideoPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.episodeSources.sources?.file !=
-        widget.episodeSources.sources?.file) {
+    if (oldWidget.episodeSources.sources[0]?.file !=
+        widget.episodeSources.sources[0]?.file) {
       _dispose();
       _initializeControllers();
     }

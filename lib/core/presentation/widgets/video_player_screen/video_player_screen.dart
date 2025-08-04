@@ -50,32 +50,44 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([
-        minimizeVideoPlayerController,
-        moveVideoPlayerController,
-      ]),
-      builder: (context, child) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            return Stack(
-              children: [
-                Positioned.fill(
-                  child: AnimatedContainerBackground(
+    return TweenAnimationBuilder(
+      tween: Tween<Offset>(
+        begin: Offset(0, MediaQuery.sizeOf(context).height * 0.6),
+        end: Offset(0, 0),
+      ),
+      curve: Curves.easeOutSine,
+      duration: Duration(milliseconds: 250),
+      builder: (context, offset, child) {
+        return Transform.translate(offset: offset, child: child);
+      },
+      child: AnimatedBuilder(
+        animation: Listenable.merge([
+          minimizeVideoPlayerController,
+          moveVideoPlayerController,
+        ]),
+        builder: (context, child) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                children: [
+                  Positioned.fill(
+                    child: AnimatedContainerBackground(
+                      minimizeVideoPlayerController:
+                          minimizeVideoPlayerController,
+                    ),
+                  ),
+                  DraggableVideoPlayer(
+                    constraints: constraints,
                     minimizeVideoPlayerController:
                         minimizeVideoPlayerController,
+                    moveVideoPlayerController: moveVideoPlayerController,
                   ),
-                ),
-                DraggableVideoPlayer(
-                  constraints: constraints,
-                  minimizeVideoPlayerController: minimizeVideoPlayerController,
-                  moveVideoPlayerController: moveVideoPlayerController,
-                ),
-              ],
-            );
-          },
-        );
-      },
+                ],
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

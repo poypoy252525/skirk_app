@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:skirk_app/features/anime_details/domain/entities/episode.dart';
-import 'package:skirk_app/features/anime_details/domain/entities/media_details.dart';
+import 'package:skirk_app/core/domain/entities/episode.dart';
+import 'package:skirk_app/core/domain/entities/media_details.dart';
 
 part 'playing_data_provider.g.dart';
 

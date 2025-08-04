@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 
 final String anilistAPI = 'https://graphql.anilist.co';
 
-final Map<String, String> headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json',
-};
+final malsyncUrl = 'https://api.malsync.moe';
 
 final String skirkAPI = 'https://delflay-server.vercel.app';
 // final String skirkAPI = 'http://192.168.100.145:3000';
