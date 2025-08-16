@@ -111,7 +111,7 @@ class _VideoPlayerState extends ConsumerState<ChewieVideoPlayer> {
   void _initializeControllers() async {
     final data = widget.episodeSources;
 
-    debugPrint('source: ${data.sources[0]?.file}');
+    debugPrint('source: ${data.sources.first?.file}');
     debugPrint('${data.tracks}');
 
     _videoPlayerController = VideoPlayerController.networkUrl(

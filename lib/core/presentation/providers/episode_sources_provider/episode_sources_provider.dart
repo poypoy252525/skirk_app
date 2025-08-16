@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:skirk_app/core/data/repositories/anime_provider_repository_impl.dart';
 import 'package:skirk_app/core/domain/entities/episode_sources.dart' as Entity;
 import 'package:skirk_app/core/domain/repositories/anime_provider_repository.dart';
+import 'package:skirk_app/core/presentation/providers/settings_provider/settings_provider.dart';
 
 part 'episode_sources_provider.g.dart';
 

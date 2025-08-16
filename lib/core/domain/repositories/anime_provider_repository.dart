@@ -1,11 +1,10 @@
 import 'package:skirk_app/core/domain/entities/episode.dart';
 import 'package:skirk_app/core/domain/entities/episode_sources.dart';
-
-enum AnimeProvider { animepahe, hianime }
+import 'package:skirk_app/core/presentation/providers/settings_provider/settings_provider.dart';
 
 abstract class AnimeProviderRepository {
   Future<List<Episode>> getEpisodes({
-    required int malId,
+    required int idMal,
     AnimeProvider provider = AnimeProvider.hianime,
   });
 

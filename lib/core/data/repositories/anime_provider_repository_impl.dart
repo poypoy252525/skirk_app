@@ -1,31 +1,36 @@
 import 'package:http/http.dart';
 import 'package:skirk_app/core/data/datasources/animepahe/animepahe.dart';
 import 'package:skirk_app/core/data/datasources/anizip/anizip.dart';
+import 'package:skirk_app/core/data/datasources/gogoanime/gogoanime.dart';
 import 'package:skirk_app/core/data/model/animepahe/animepahe_episode_model.dart';
 import 'package:skirk_app/core/data/model/anizip/anizip_episode_metadata_model.dart';
+import 'package:skirk_app/core/data/model/episode_model.dart';
 import 'package:skirk_app/core/domain/entities/episode.dart';
 import 'package:skirk_app/core/domain/entities/episode_sources.dart';
 import 'package:skirk_app/core/domain/repositories/anime_provider_repository.dart';
 import 'package:skirk_app/core/data/datasources/hianime/hianime.dart';
+import 'package:skirk_app/core/presentation/providers/settings_provider/settings_provider.dart';
 
 class AnimeRepositoryImpl implements AnimeProviderRepository {
   late Hianime _hianime;
   late Animepahe _animepahe;
   late Anizip _anizip;
+  late Gogoanime _gogoanime;
 
   AnimeRepositoryImpl(Client client) {
     _hianime = Hianime(client);
     _animepahe = Animepahe(client);
     _anizip = Anizip(client);
+    _gogoanime = Gogoanime(client);
   }
 
   @override
   Future<List<Episode>> getEpisodes({
-    required int malId,
+    required int idMal,
     AnimeProvider provider = AnimeProvider.hianime,
   }) async {
     if (provider == AnimeProvider.hianime) {
-      final hianimeEpisodes = await _hianime.getEpisodes(malId: malId);
+      final hianimeEpisodes = await _hianime.getEpisodes(malId: idMal);
       final episodes = hianimeEpisodes.map((item) {
         return Episode(
           id: item.id,
@@ -46,8 +51,8 @@ class AnimeRepositoryImpl implements AnimeProviderRepository {
         anizipEpisodes as List<AnizipEpisodeMetadataModel>,
         animepaheEpisodes as List<AnimepaheEpisodeModel>,
       ] = await Future.wait([
-        _anizip.getEpisodeMetadata(malId: malId),
-        _animepahe.getEpisodes(malId: malId),
+        _anizip.getEpisodeMetadata(malId: idMal),
+        _animepahe.getEpisodes(malId: idMal),
       ]);
       int index = 0;
       return animepaheEpisodes.map((item) {
@@ -65,6 +70,37 @@ class AnimeRepositoryImpl implements AnimeProviderRepository {
       }).toList();
     }
 
+    if (provider == AnimeProvider.gogoanime) {
+      final [
+        gogoEpisodes as List<EpisodeModel>,
+        anizipEpisodes as List<AnizipEpisodeMetadataModel>,
+      ] = await Future.wait([
+        _gogoanime.getEpisodes(idMal: idMal),
+        _anizip.getEpisodeMetadata(malId: idMal),
+      ]);
+
+      int index = 0;
+      final episodes = gogoEpisodes.map((episode) {
+        AnizipEpisodeMetadataModel? anizipEpisode;
+        try {
+          anizipEpisode = anizipEpisodes[index];
+        } catch (e) {
+          print(e);
+        }
+        index++;
+        return Episode(
+          id: episode.id,
+          number: episode.number,
+          description: anizipEpisode?.overview ?? anizipEpisode?.summary,
+          createdAt: anizipEpisode?.airDate,
+          image: anizipEpisode?.image,
+          title: anizipEpisode?.title?.en ?? anizipEpisode?.title?.ja,
+        );
+      }).toList();
+
+      return episodes;
+    }
+
     return [];
   }
 
@@ -76,7 +112,7 @@ class AnimeRepositoryImpl implements AnimeProviderRepository {
     if (animeProvider == AnimeProvider.hianime) {
       final sources = await _hianime.getSources(
         episodeId: episodeId,
-        provider: HianimeProvider.vidwish,
+        provider: HianimeProvider.megacloud,
       );
 
       return EpisodeSources(
@@ -102,11 +138,25 @@ class AnimeRepositoryImpl implements AnimeProviderRepository {
     }
     if (animeProvider == AnimeProvider.animepahe) {
       final sources = await _animepahe.getSources(episodeId);
+
+      print(sources.map((item) => item.resolution).toList());
       return EpisodeSources(
         referer: 'https://animepahe.ru/',
         sources: sources.map((source) {
           return Source(file: source.link);
         }).toList(),
+      );
+    }
+
+    if (animeProvider == AnimeProvider.gogoanime) {
+      print('provider: $animeProvider');
+      final sources = await _gogoanime.getEpisodeSources(episodeId: episodeId);
+      return EpisodeSources(
+        sources: [Source(file: sources.sources?[0].file, isM3U8: true)],
+        referer: sources.referer,
+        tracks: sources.tracks
+            ?.map((track) => Track(file: track.file, kind: track.kind))
+            .toList(),
       );
     }
 

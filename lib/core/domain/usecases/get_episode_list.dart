@@ -1,5 +1,6 @@
 import 'package:skirk_app/core/domain/entities/episode.dart';
 import 'package:skirk_app/core/domain/repositories/anime_provider_repository.dart';
+import 'package:skirk_app/core/presentation/providers/settings_provider/settings_provider.dart';
 
 class GetEpisodeList {
   final AnimeProviderRepository repository;
@@ -10,6 +11,6 @@ class GetEpisodeList {
     required int malId,
     required AnimeProvider provider,
   }) {
-    return repository.getEpisodes(malId: malId, provider: provider);
+    return repository.getEpisodes(idMal: malId, provider: provider);
   }
 }

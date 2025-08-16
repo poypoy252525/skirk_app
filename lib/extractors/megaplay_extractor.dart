@@ -12,12 +12,12 @@ class MegaplayExtractor {
 
   Future<EpisodeSourcesModel> extract({
     required String episodeId,
-    String? type,
+    String type = 'sub',
   }) async {
-    final urlStr = '$_baseURL/stream/s-2/$episodeId/${type ?? 'sub'}';
+    final urlStr = '$_baseURL/stream/s-2/$episodeId/$type';
     var response = await client.get(
       Uri.parse(urlStr),
-      headers: {'Referer': '$_baseURL/api'},
+      headers: {'Referer': '$_baseURL/'},
     );
 
     final document = parse(response.body);

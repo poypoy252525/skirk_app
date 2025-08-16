@@ -55,8 +55,10 @@ dependencies:
   media_kit_libs_video: ^1.0.6
   html: ^0.15.6
   encrypt: ^5.0.3
+  crypto: ^3.0.6
   flutter_js: ^0.8.5
   group_button: ^5.3.4
+  string_similarity: ^2.1.1
 
 dev_dependencies:
   flutter_test:

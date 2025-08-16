@@ -5,6 +5,7 @@ import 'package:skirk_app/core/data/repositories/anime_provider_repository_impl.
 import 'package:skirk_app/core/domain/entities/episode.dart';
 import 'package:skirk_app/core/domain/repositories/anime_provider_repository.dart';
 import 'package:skirk_app/core/domain/usecases/get_episode_list.dart';
+import 'package:skirk_app/core/presentation/providers/settings_provider/settings_provider.dart';
 
 part 'episode_list_provider.g.dart';
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skirk_app/core/constants.dart';
 import 'package:skirk_app/core/presentation/providers/anime_list_provider/anime_list_provider.dart';
+import 'package:skirk_app/core/presentation/widgets/anime_provider_dropdown.dart';
 import 'package:skirk_app/core/presentation/widgets/media_details/media_details_body.dart';
 import 'package:skirk_app/core/presentation/widgets/video_player_screen/video_player_pop_scope.dart';
 
@@ -33,6 +34,7 @@ class _MediaDetailsScreenState extends ConsumerState<MediaDetailsScreen> {
                 : '',
             style: TextStyle(fontSize: 18),
           ),
+          actions: [AnimeProviderDropdown()],
         ),
         body: Center(
           child: mediaDetailsAsync.when(

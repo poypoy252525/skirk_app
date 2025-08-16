@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:skirk_app/core/presentation/pages/discover_screen.dart';
 import 'package:skirk_app/core/presentation/pages/home_screen.dart';
 import 'package:skirk_app/core/presentation/pages/media_details_screen.dart';
+import 'package:skirk_app/core/presentation/pages/profile_screen.dart';
 import 'package:skirk_app/core/presentation/pages/search_screen.dart';
 import 'package:skirk_app/layout/layout.dart';
 
@@ -52,15 +53,7 @@ final router = GoRouter(
             GoRoute(
               name: 'profile',
               path: '/profile',
-              builder: (context, state) => Scaffold(
-                appBar: AppBar(title: Text('Profile')),
-                body: Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: kBottomNavigationBarHeight,
-                  ),
-                  child: Center(child: Text('Profile screen')),
-                ),
-              ),
+              builder: (context, state) => ProfileScreen(),
             ),
           ],
         ),

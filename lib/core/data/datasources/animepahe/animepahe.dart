@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
-import 'package:skirk_app/core/constants.dart';
 import 'package:skirk_app/core/data/model/animepahe/animepahe_episode_model.dart';
 import 'package:skirk_app/core/data/model/animepahe/animepahe_sources_model.dart';
 import 'package:skirk_app/extractors/kwik_extractor.dart';
 
 class Animepahe {
   final String _baseURL = 'https://animepahe.ru';
+  final _malsyncUrl = 'https://api.malsync.moe';
   final Client client;
   late KwikExtractor _extractor;
 
@@ -19,7 +19,7 @@ class Animepahe {
 
   Future<String> _getAnimepaheId({required int malId}) async {
     final response = await client.get(
-      Uri.parse('$malsyncUrl/mal/anime/$malId'),
+      Uri.parse('$_malsyncUrl/mal/anime/$malId'),
     );
     final json = jsonDecode(response.body);
     final animepahe = json['Sites']['animepahe'] as Map<String, dynamic>;
@@ -69,6 +69,10 @@ class Animepahe {
     final sources = await _extractor.extract(id: id);
     return sources.map((source) {
       return AnimepaheSourcesModel.fromJson(source);
-    }).toList();
+    }).toList()..sort(
+      (a, b) => (double.parse(
+        b.resolution!,
+      ).compareTo(double.parse(a.resolution!))).toInt(),
+    );
   }
 }

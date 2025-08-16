@@ -7,11 +7,11 @@ import 'package:skirk_app/core/constants.dart';
 import 'package:skirk_app/core/domain/entities/episode.dart';
 import 'package:skirk_app/core/domain/entities/media.dart';
 import 'package:skirk_app/core/domain/entities/media_details.dart';
-import 'package:skirk_app/core/domain/repositories/anime_provider_repository.dart';
 import 'package:skirk_app/core/presentation/providers/anime_list_provider/anime_list_provider.dart';
 import 'package:skirk_app/core/presentation/providers/episode_list_provider/episode_list_provider.dart';
 import 'package:skirk_app/core/presentation/providers/episode_sources_provider/episode_sources_provider.dart';
 import 'package:skirk_app/core/presentation/providers/playing_data_provider/playing_data_provider.dart';
+import 'package:skirk_app/core/presentation/providers/settings_provider/settings_provider.dart';
 
 class MediaCarousel extends StatelessWidget {
   const MediaCarousel({super.key, required this.mediaListAsync});
@@ -198,11 +198,17 @@ class WatchNowButtonState extends ConsumerState<WatchNowButton> {
     return FilledButton.icon(
       onPressed: () async {
         final playingDataNotifier = ref.read(playingDataProvider.notifier);
+        final provider = ref.read(animeProvider);
         final [
           episodes as List<Episode>,
           mediaDetails as MediaDetails,
         ] = await Future.wait([
-          ref.read(episodeListProvider(malId: widget.idMal).future),
+          ref.read(
+            episodeListProvider(
+              malId: widget.idMal,
+              animeProvider: provider,
+            ).future,
+          ),
           ref.read(mediaDetailsProvider(mediaId: widget.mediaId).future),
         ]);
 
@@ -218,7 +224,7 @@ class WatchNowButtonState extends ConsumerState<WatchNowButton> {
         episodeSourcesNotifier.remove();
         episodeSourcesNotifier.set(
           episodeId: episodes[0].id,
-          animeProvider: AnimeProvider.hianime,
+          animeProvider: provider,
         );
 
         showMinimizableScreen.value = true;

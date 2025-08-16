@@ -112,7 +112,6 @@ class AnimeMetadataRepositoryImpl implements AnimeMetadataRepository {
       page: page,
       perPage: perPage,
       search: query,
-
       // statusIn: ['RELEASING', 'FINISHED'],
       sort: ['POPULARITY_DESC'],
     );

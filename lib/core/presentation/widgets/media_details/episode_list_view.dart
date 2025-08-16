@@ -4,11 +4,11 @@ import 'package:shimmer/shimmer.dart';
 import 'package:skirk_app/core/constants.dart';
 import 'package:skirk_app/core/domain/entities/episode.dart';
 import 'package:skirk_app/core/domain/entities/media_details.dart';
-import 'package:skirk_app/core/domain/repositories/anime_provider_repository.dart';
 import 'package:skirk_app/core/presentation/providers/episode_list_provider/episode_list_provider.dart';
 import 'package:skirk_app/core/presentation/providers/episode_sources_provider/episode_sources_provider.dart';
 import 'package:skirk_app/core/presentation/providers/minimize_video_player_controller/minimize_video_player_controller_provider.dart';
 import 'package:skirk_app/core/presentation/providers/playing_data_provider/playing_data_provider.dart';
+import 'package:skirk_app/core/presentation/providers/settings_provider/settings_provider.dart';
 import 'package:skirk_app/core/presentation/widgets/media_details/list_item_card.dart';
 
 class MediaDetailsEpisodeListView extends ConsumerStatefulWidget {
@@ -28,15 +28,33 @@ class MediaDetailsEpisodeListView extends ConsumerStatefulWidget {
 
 class _EpisodelistviewState extends ConsumerState<MediaDetailsEpisodeListView>
     with AutomaticKeepAliveClientMixin {
-  AnimeProvider animeProvider = AnimeProvider.hianime;
+  Episode? selectedEpisode;
+
+  @override
+  void initState() {
+    super.initState();
+
+    selectedEpisode = ref.read(playingDataProvider)?.episode;
+
+    ref.listenManual(playingDataProvider, (previous, next) {
+      if (previous?.episode.id == next?.episode.id) return;
+
+      setState(() {
+        selectedEpisode = next?.episode;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
+    final provider = ref.watch(animeProvider);
+
     final episodeListAsync = ref.watch(
       episodeListProvider(
         malId: widget.mediaDetails.idMal!,
-        animeProvider: animeProvider,
+        animeProvider: provider,
       ),
     );
 
@@ -66,76 +84,55 @@ class _EpisodelistviewState extends ConsumerState<MediaDetailsEpisodeListView>
             ),
             itemCount: episodes.length,
             itemBuilder: (context, index) {
-              // if (index == 0) {
-              //   return GroupButton(
-              //     buttons: ['Hianime', 'Animepahe'],
-              //     isRadio: true,
-              //     buttonBuilder: (selected, value, context) {
-              //       return Container(
-              //         decoration: BoxDecoration(
-              //           color: selected
-              //               ? Colors.white
-              //               : Theme.of(context).highlightColor,
-              //           borderRadius: BorderRadius.circular(8),
-              //         ),
-              //         padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              //         child: Text(
-              //           value,
-              //           style: TextStyle(
-              //             color: selected ? Colors.black : Colors.white,
-              //             fontSize: 16,
-              //             fontWeight: FontWeight.w600,
-              //           ),
-              //         ),
-              //       );
-              //     },
-              //     onSelected: (value, index, isSelected) {
-              //       setState(() {
-              //         animeProvider = index == 0
-              //             ? AnimeProvider.hianime
-              //             : AnimeProvider.animepahe;
-              //       });
-              //     },
-              //   );
-              // }
+              final selected = episodes[index].id == selectedEpisode?.id;
+              return Container(
+                color: selected
+                    ? Theme.of(context).focusColor
+                    : Colors.transparent,
+                child: ListItemCard(
+                  description: episodes[index].description ?? 'No description.',
+                  image:
+                      episodes[index].image ??
+                      mediaDetails.coverImage?.large ??
+                      '',
+                  title:
+                      episodes[index].title ??
+                      'Episode ${episodes[index].number}',
+                  index:
+                      episodes[index].duration ??
+                      'EP ${episodes[index].number}',
+                  onTap: (context) {
+                    final playingData = ref.read(playingDataProvider);
 
-              return ListItemCard(
-                description: episodes[index].description ?? 'No description.',
-                image:
-                    episodes[index].image ??
-                    mediaDetails.coverImage?.large ??
-                    '',
-                title: episodes[index].title ?? 'No title',
-                index:
-                    episodes[index].duration ?? 'EP ${episodes[index].number}',
-                onTap: (context) {
-                  final playingData = ref.read(playingDataProvider);
+                    if (playingData?.episode.id != episodes[index].id) {
+                      ref
+                          .read(playingDataProvider.notifier)
+                          .set(
+                            episode: episodes[index],
+                            mediaDetails: widget.mediaDetails,
+                          );
+                      final episodeSourcesNotifier = ref.read(
+                        episodeSourcesProvider.notifier,
+                      );
 
-                  if (playingData?.episode.id != episodes[index].id) {
-                    ref
-                        .read(playingDataProvider.notifier)
-                        .set(
-                          episode: episodes[index],
-                          mediaDetails: widget.mediaDetails,
-                        );
-                    final episodeSourcesNotifier = ref.read(
-                      episodeSourcesProvider.notifier,
+                      episodeSourcesNotifier.remove();
+
+                      final provider = ref.read(animeProvider);
+
+                      episodeSourcesNotifier.set(
+                        episodeId: episodes[index].id,
+                        animeProvider: provider,
+                      );
+                    }
+
+                    final minimizeVideoPlayerController = ref.read(
+                      minimizeVideoPlayerControllerProvider,
                     );
-
-                    episodeSourcesNotifier.remove();
-                    episodeSourcesNotifier.set(
-                      episodeId: episodes[index].id,
-                      animeProvider: animeProvider,
-                    );
-                  }
-
-                  final minimizeVideoPlayerController = ref.read(
-                    minimizeVideoPlayerControllerProvider,
-                  );
-                  minimizeVideoPlayerController?.reverse();
-                  debugPrint('my controller: $minimizeVideoPlayerController');
-                  showMinimizableScreen.value = true;
-                },
+                    minimizeVideoPlayerController?.reverse();
+                    debugPrint('my controller: $minimizeVideoPlayerController');
+                    showMinimizableScreen.value = true;
+                  },
+                ),
               );
             },
           )

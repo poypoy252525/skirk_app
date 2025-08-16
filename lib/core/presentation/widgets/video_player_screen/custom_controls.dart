@@ -655,6 +655,7 @@ Widget _buildSubtitles({
   }
 
   return Container(
+    // margin: EdgeInsets.symmetric(horizontal: 32),
     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
     decoration: BoxDecoration(
       color: const Color(0x96000000),
