@@ -193,16 +193,17 @@ class Hianime {
 
     var sourcesJson = jsonDecode(sourcesResp.body);
 
-    print(sourcesJson['sources']);
+    if (sourcesJson['encrypted']) {
+      final decryptedSources = await _megacloudExtractor.decrypt(
+        Uri.encodeComponent(sourcesJson['sources']),
+        Uri.encodeComponent(key),
+        Uri.encodeComponent(nonce),
+      );
 
-    final decryptedSources = await _megacloudExtractor.decrypt(
-      Uri.encodeComponent(sourcesJson['sources']),
-      Uri.encodeComponent(key),
-      Uri.encodeComponent(nonce),
-    );
+      print(decryptedSources);
+      sourcesJson['sources'] = jsonDecode(decryptedSources);
+    }
 
-    print(decryptedSources);
-    sourcesJson['sources'] = jsonDecode(decryptedSources);
     sourcesJson['referer'] = 'https://megacloud.blog/';
 
     return EpisodeSourcesModel.fromJson(sourcesJson);
